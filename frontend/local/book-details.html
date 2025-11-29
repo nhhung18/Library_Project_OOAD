@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi tiết sách - HAB Library</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="header">
+    <div class="header-1">
+        <a href="index.html" class="logo"> Thư viện HAB </a>
+        <form action="" class="search-form">
+            <input type="search" placeholder="tìm kiếm sách..." id="search-box">
+            <label for="search-box" class="fas fa-search"></label>
+        </form>
+        <div class="icons">
+            <div id="search-btn" class="fas fa-search"></div>
+            <a href="#" class="fas fa-heart"></a>
+            <div id="login-btn" class="fas fa-user"></div>
+        </div>
+    </div>
+    <div class="header-2">
+        <nav class="navbar">
+            <a href="index.html">Trang chủ</a>
+            <a href="index.html#featured">Sách</a>
+            <a href="index.html#arrivals">Tin tức</a>
+            <a href="index.html#reviews">Đánh giá</a>
+        </nav>
+    </div>
+</header>
+<nav class="bottom-navbar">
+    <a href="index.html" class="fas fa-home"></a>
+    <a href="index.html#featured" class="fas fa-list"></a>
+</nav>
+
+<section class="book-details">
+    <div class="row">
+        <div class="image-col">
+            <img src="image/book/dacnhantam.jpg" alt="Đắc Nhân Tâm" id="MainImg">
+        </div>
+
+        <div class="content-col">
+            <h2 class="book-title" id="bookTitle">Đắc Nhân Tâm</h2>
+            <div class="rating-display">
+                <span id="ratingStars"></span>
+                <span id="reviewCount">(120 đánh giá)</span>
+            </div>
+            <p style="color:#666; font-size:0.95rem; margin:0.5rem 0;" id="bookAuthor">Tác giả: Dale Carnegie</p>
+            <p style="color:#666; font-size:0.95rem; margin:0.5rem 0;" id="bookCategory">Thể loại: Kỹ năng sống</p>
+            
+            <div class="price" id="bookPrice">$15.99 <span>$20.99</span></div>
+            
+            <div style="background:#f0f0f0; padding:1rem; border-radius:0.5rem; margin:1rem 0; display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <p style="margin:0; color:#666; font-size:0.9rem;">Số lượng sách còn:</p>
+                    <h3 style="margin:0.5rem 0 0 0; color:#27ae60;" id="bookQty">12</h3>
+                </div>
+                <div style="text-align:right;">
+                    <i class="fas fa-box-open" style="font-size:3rem; color:#27ae60; opacity:0.3;"></i>
+                </div>
+            </div>
+            
+            <p class="description" id="bookDescription">
+                Đây là cuốn sách nổi tiếng nhất về nghệ thuật giao tiếp và thu phục lòng người.
+            </p>
+
+            <div class="actions">
+                <input type="number" value="1" min="1" max="10" class="qty-input" id="qtyInput">
+                <a href="#" class="btn" onclick="addToCartFromDetails(event)">Yêu Cầu Mương</a>
+            </div>
+
+            <div class="meta-info">
+                <p>Tác giả: <span id="metaAuthor">Dale Carnegie</span></p>
+                <p>Thể loại: <span id="metaCategory">Kỹ năng sống</span></p>
+                <p>Tình trạng: <span style="color:var(--green)" id="metaStatus">Còn hàng</span></p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="review-section">
+    <h1 class="heading"> <span>Đánh giá sản phẩm</span> </h1>
+    
+    <div class="review-form">
+        <h3>Gửi đánh giá của bạn</h3>
+        <div class="star-widget" id="ratingWidget">
+            <input type="radio" name="rate" id="rate-5" value="5"> <label for="rate-5" class="fas fa-star"></label>
+            <input type="radio" name="rate" id="rate-4" value="4"> <label for="rate-4" class="fas fa-star"></label>
+            <input type="radio" name="rate" id="rate-3" value="3"> <label for="rate-3" class="fas fa-star"></label>
+            <input type="radio" name="rate" id="rate-2" value="2"> <label for="rate-2" class="fas fa-star"></label>
+            <input type="radio" name="rate" id="rate-1" value="1"> <label for="rate-1" class="fas fa-star"></label>
+        </div>
+        <div class="textarea">
+            <textarea id="reviewText" placeholder="Mô tả trải nghiệm của bạn..."></textarea>
+        </div>
+        <button class="btn" onclick="submitReview(event)">Gửi Đánh Giá</button>
+        <p id="reviewMsg" style="text-align:center; margin-top:1rem; font-size:0.9rem;"></p>
+    </div>
+</section>
+
+<section class="footer">
+    <div class="credit"> created by <span>HungNguyen</span> | all rights reserved! </div>
+</section>
+
+<script src="js/script.js"></script>
+<script>
+let currentBook = null;
+
+// Load book details from URL parameter on page load
+document.addEventListener('DOMContentLoaded', function() {
+  const params = new URLSearchParams(window.location.search);
+  const bookId = parseInt(params.get('id'));
+  
+  if (!bookId) {
+    showNotification('⚠️ ID sách không hợp lệ', 'warning');
+    return;
+  }
+  
+  // Find book in database
+  currentBook = booksDatabase.find(b => b.id === bookId);
+  
+  if (!currentBook) {
+    showNotification('❌ Sách không tìm thấy', 'error');
+    return;
+  }
+  
+  // Populate book details
+  displayBookDetails();
+});
+
+function displayBookDetails() {
+  if (!currentBook) return;
+  
+  // Update title and basic info
+  document.getElementById('bookTitle').textContent = currentBook.name;
+  document.getElementById('bookAuthor').textContent = `Tác giả: ${currentBook.author}`;
+  document.getElementById('bookCategory').textContent = `Thể loại: ${currentBook.category}`;
+  document.getElementById('bookDescription').textContent = currentBook.description;
+  
+  // Update price
+  const priceDiv = document.getElementById('bookPrice');
+  priceDiv.innerHTML = `$${currentBook.price} <span>$${currentBook.originalPrice}</span>`;
+  
+  // Update quantity
+  const qtyElement = document.getElementById('bookQty');
+  qtyElement.textContent = currentBook.qty;
+  const qtyInput = document.getElementById('qtyInput');
+  qtyInput.max = Math.min(currentBook.qty, 10);
+  
+  // Update status
+  const status = currentBook.qty > 0 ? 'Còn hàng' : 'Hết hàng';
+  document.getElementById('metaStatus').textContent = status;
+  document.getElementById('metaStatus').style.color = currentBook.qty > 0 ? 'var(--green)' : 'var(--red)';
+  
+  // Update meta info
+  document.getElementById('metaAuthor').textContent = currentBook.author;
+  document.getElementById('metaCategory').textContent = currentBook.category;
+  
+  // Update image
+  document.getElementById('MainImg').src = currentBook.image;
+  document.getElementById('MainImg').alt = currentBook.name;
+  
+  // Update rating display
+  const ratingStars = document.getElementById('ratingStars');
+  let stars = '';
+  for (let i = 0; i < 5; i++) {
+    stars += `<i class="fas fa-star" style="color:${i < currentBook.rating ? 'var(--orange)' : '#ccc'};"></i>`;
+  }
+  ratingStars.innerHTML = stars + ' ';
+  
+  // Update review count
+  const relevantReviews = (JSON.parse(localStorage.getItem('reviews')) || []).filter(r => r.bookId === currentBook.id);
+  document.getElementById('reviewCount').textContent = `(${relevantReviews.length} đánh giá)`;
+  
+  // Disable borrow button if out of stock
+  const borrowBtn = document.querySelector('.actions .btn');
+  if (currentBook.qty <= 0) {
+    borrowBtn.style.opacity = '0.5';
+    borrowBtn.style.cursor = 'not-allowed';
+    borrowBtn.onclick = (e) => {
+      e.preventDefault();
+      showNotification('❌ Sách đã hết', 'error');
+    };
+  }
+}
+
+// Book details page specific functions
+function addToCartFromDetails(event) {
+  event.preventDefault();
+  
+  if (!currentBook) {
+    showNotification('⚠️ Lỗi: Không tìm thấy sách', 'warning');
+    return;
+  }
+  
+  if (currentBook.qty <= 0) {
+    showNotification('❌ Sách đã hết', 'error');
+    return;
+  }
+  
+  const qty = parseInt(document.getElementById('qtyInput').value) || 1;
+  
+  if (qty > currentBook.qty) {
+    showNotification(`⚠️ Chỉ còn ${currentBook.qty} quyển`, 'warning');
+    return;
+  }
+  
+  addToCart(currentBook.id, currentBook.name, currentBook.price, qty);
+  showNotification(`✓ Đã thêm ${qty} quyển "${currentBook.name}" vào giỏ`, 'success');
+}
+
+function submitReview(event) {
+  event.preventDefault();
+  
+  if (!currentBook) {
+    showNotification('⚠️ Lỗi: Không tìm thấy sách', 'warning');
+    return;
+  }
+  
+  const rating = document.querySelector('input[name="rate"]:checked');
+  const text = document.getElementById('reviewText').value;
+  const msg = document.getElementById('reviewMsg');
+  
+  if (!rating) {
+    msg.textContent = '⚠️ Vui lòng chọn số sao';
+    msg.style.color = 'orange';
+    return;
+  }
+  
+  if (!text.trim()) {
+    msg.textContent = '⚠️ Vui lòng viết đánh giá';
+    msg.style.color = 'orange';
+    return;
+  }
+  
+  let reviews = JSON.parse(localStorage.getItem('reviews')) || [];
+  const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+  
+  if (!currentUser) {
+    msg.textContent = '⚠️ Vui lòng đăng nhập để đánh giá';
+    msg.style.color = 'orange';
+    return;
+  }
+  
+  reviews.push({
+    bookId: currentBook.id,
+    rating: parseInt(rating.value),
+    text: text,
+    date: new Date().toLocaleDateString('vi-VN'),
+    user: currentUser.name
+  });
+  
+  localStorage.setItem('reviews', JSON.stringify(reviews));
+  msg.textContent = '✓ Cảm ơn đánh giá của bạn!';
+  msg.style.color = 'green';
+  
+  document.querySelectorAll('input[name="rate"]').forEach(el => el.checked = false);
+  document.getElementById('reviewText').value = '';
+  
+  setTimeout(() => msg.textContent = '', 3000);
+}
+</script>
+</html>

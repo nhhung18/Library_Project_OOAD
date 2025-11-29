@@ -31,21 +31,24 @@
         </form>
 
         <div class="icons">
-            <div id="search-btn" class="fas fa-search"></div>
-            <a href="#" class="fas fa-heart"></a>
-            <a href="#" class="fas fa-shopping-cart"></a>
-            <div id="login-btn" class="fas fa-user"></div>
+            <div id="search-btn" class="fas fa-search" title="Tìm kiếm"></div>
+            <a href="#" id="wishlist-btn" class="fas fa-heart" title="Yêu thích"></a>
+            <a href="#" id="cart-btn" class="fas fa-shopping-cart" title="Giỏ hàng">
+                <span id="cart-count" class="cart-badge">0</span>
+            </a>
+            <div id="login-btn" class="fas fa-user" title="Tài khoản"></div>
         </div>
 
     </div>
 
     <div class="header-2">
         <nav class="navbar">
-            <a href="#home">trang chủ</a>
-            <a href="#featured">sách</a>
-            <a href="#arrivals">tin tức</a>
-            <a href="#reviews">đánh giá</a>
-            <a href="#blogs">về chúng tôi</a>
+            <a href="#home">Trang chủ</a>
+            <a href="books.html">Sách</a>
+            <a href="#arrivals">Tin tức</a>
+            <a href="#reviews">Đánh giá</a>
+            <a href="#blogs">Về chúng tôi</a>
+            <a href="my-account.html" id="myAccountLink" style="display:none;">Tài Khoản</a>
         </nav>
     </div>
 
@@ -65,23 +68,63 @@
 
 <!-- login form  -->
 
-<div class="login-form-container">
+<div class="login-form-container" id="loginFormContainer">
 
     <div id="close-login-btn" class="fas fa-times"></div>
 
-    <form action="">
-        <h3>sign in</h3>
-        <span>username</span>
-        <input type="email" name="" class="box" placeholder="enter your email" id="">
-        <span>password</span>
-        <input type="password" name="" class="box" placeholder="enter your password" id="">
-        <div class="checkbox">
-            <input type="checkbox" name="" id="remember-me">
-            <label for="remember-me"> remember me</label>
+    <form id="loginForm" onsubmit="handleLogin(event)">
+        <h3 id="formTitle">Đăng nhập</h3>
+        
+        <!-- Login Type Selection -->
+        <div style="display: flex; gap: 1rem; margin-bottom: 2rem;">
+            <button type="button" onclick="switchUserType('customer')" id="customerTypeBtn" style="flex:1; padding:1rem; background:var(--green); color:white; border:none; border-radius:0.3rem; cursor:pointer; font-weight:bold;">👤 Khách Hàng</button>
+            <button type="button" onclick="switchUserType('staff')" id="staffTypeBtn" style="flex:1; padding:1rem; background:#ccc; color:#333; border:none; border-radius:0.3rem; cursor:pointer; font-weight:bold;">👨‍💼 Nhân Viên</button>
         </div>
-        <input type="submit" value="sign in" class="btn">
-        <p>forget password ? <a href="#">click here</a></p>
-        <p>don't have an account ? <a href="#">create one</a></p>
+        
+        <!-- Login Form -->
+        <div id="loginFormContent">
+            <span>Email</span>
+            <input type="email" class="box" placeholder="nhập email của bạn" id="loginEmail" required>
+            <span>Mật khẩu</span>
+            <input type="password" class="box" placeholder="nhập mật khẩu" id="loginPassword" required>
+            <div class="checkbox">
+                <input type="checkbox" id="remember-me">
+                <label for="remember-me">Ghi nhớ tôi</label>
+            </div>
+            <input type="submit" value="Đăng nhập" class="btn">
+            <p>Quên mật khẩu? <a href="#" onclick="alert('Liên hệ Admin để đặt lại mật khẩu'); return false;">Nhấn vào đây</a></p>
+            <p id="registerLinkContainer">Chưa có tài khoản? <a href="#" onclick="switchLoginForm('register'); return false;">Tạo tài khoản</a></p>
+        </div>
+
+        <!-- Staff Login Info -->
+        <div id="staffLoginInfo" style="display:none; background:#f0f0f0; padding:1rem; border-radius:0.3rem; margin-top:1rem; font-size:1.2rem;">
+            <p style="margin:0.5rem 0;"><strong>Admin:</strong></p>
+            <p style="margin:0.5rem 0;">Email: admin@lib.com</p>
+            <p style="margin:0.5rem 0;">Password: admin123</p>
+            <p style="margin:1rem 0 0.5rem 0;"><strong>Nhân viên:</strong></p>
+            <p style="margin:0.5rem 0;">Email: librarian@lib.com</p>
+            <p style="margin:0.5rem 0;">Password: librarian123</p>
+        </div>
+
+        <!-- Register Form (hidden) -->
+        <div id="registerFormContent" style="display:none;">
+            <span>Họ và tên</span>
+            <input type="text" class="box" placeholder="nhập họ và tên" id="registerName">
+            <span>Email</span>
+            <input type="email" class="box" placeholder="nhập email" id="registerEmail">
+            <span>Mật khẩu</span>
+            <input type="password" class="box" placeholder="nhập mật khẩu" id="registerPassword">
+            <span>Xác nhận mật khẩu</span>
+            <input type="password" class="box" placeholder="xác nhận mật khẩu" id="registerPasswordConfirm">
+            <span>Chọn Hạng Thẻ</span>
+            <select class="box" id="registerTier" style="cursor:pointer; font-size:1.6rem;">
+                <option value="bronze">🥉 Đồng - Mượn 2 sách, hạn 14 ngày</option>
+                <option value="silver">🥈 Bạc - Mượn 5 sách, hạn 30 ngày</option>
+                <option value="gold">🥇 Vàng - Mượn 10 sách, hạn 60 ngày</option>
+            </select>
+            <input type="submit" value="Tạo tài khoản" class="btn">
+            <p>Đã có tài khoản? <a href="#" onclick="switchLoginForm('login'); return false;">Đăng nhập</a></p>
+        </div>
     </form>
 
 </div>
@@ -159,173 +202,10 @@
 <!-- featured section starts  -->
 
 <section class="featured" id="featured">
-
     <h1 class="heading"> <span>featured books</span> </h1>
-
     <div class="swiper featured-slider">
-
-        <div class="swiper-wrapper">
-
-            <div class="swiper-slide box">
-                <div class="icons">
-                    <a href="#" class="fas fa-search"></a>
-                    <a href="#" class="fas fa-heart"></a>
-                    <a href="#" class="fas fa-eye"></a>
-                </div>
-                <div class="image">
-                    <img src="image/book-1.png" alt="">
-                </div>
-                <div class="content">
-                    <h3>featured books</h3>
-                    <div class="price">$15.99 <span>$20.99</span></div>
-                    <a href="#" class="btn">add to cart</a>
-                </div>
-            </div>
-
-            <div class="swiper-slide box">
-                <div class="icons">
-                    <a href="#" class="fas fa-search"></a>
-                    <a href="#" class="fas fa-heart"></a>
-                    <a href="#" class="fas fa-eye"></a>
-                </div>
-                <div class="image">
-                    <img src="image/book-2.png" alt="">
-                </div>
-                <div class="content">
-                    <h3>featured books</h3>
-                    <div class="price">$15.99 <span>$20.99</span></div>
-                    <a href="#" class="btn">add to cart</a>
-                </div>
-            </div>
-
-            <div class="swiper-slide box">
-                <div class="icons">
-                    <a href="#" class="fas fa-search"></a>
-                    <a href="#" class="fas fa-heart"></a>
-                    <a href="#" class="fas fa-eye"></a>
-                </div>
-                <div class="image">
-                    <img src="image/book-3.png" alt="">
-                </div>
-                <div class="content">
-                    <h3>featured books</h3>
-                    <div class="price">$15.99 <span>$20.99</span></div>
-                    <a href="#" class="btn">add to cart</a>
-                </div>
-            </div>
-
-            <div class="swiper-slide box">
-                <div class="icons">
-                    <a href="#" class="fas fa-search"></a>
-                    <a href="#" class="fas fa-heart"></a>
-                    <a href="#" class="fas fa-eye"></a>
-                </div>
-                <div class="image">
-                    <img src="image/book-4.png" alt="">
-                </div>
-                <div class="content">
-                    <h3>featured books</h3>
-                    <div class="price">$15.99 <span>$20.99</span></div>
-                    <a href="#" class="btn">add to cart</a>
-                </div>
-            </div>
-
-            <div class="swiper-slide box">
-                <div class="icons">
-                    <a href="#" class="fas fa-search"></a>
-                    <a href="#" class="fas fa-heart"></a>
-                    <a href="#" class="fas fa-eye"></a>
-                </div>
-                <div class="image">
-                    <img src="image/book-5.png" alt="">
-                </div>
-                <div class="content">
-                    <h3>featured books</h3>
-                    <div class="price">$15.99 <span>$20.99</span></div>
-                    <a href="#" class="btn">add to cart</a>
-                </div>
-            </div>
-
-            <div class="swiper-slide box">
-                <div class="icons">
-                    <a href="#" class="fas fa-search"></a>
-                    <a href="#" class="fas fa-heart"></a>
-                    <a href="#" class="fas fa-eye"></a>
-                </div>
-                <div class="image">
-                    <img src="image/book-6.png" alt="">
-                </div>
-                <div class="content">
-                    <h3>featured books</h3>
-                    <div class="price">$15.99 <span>$20.99</span></div>
-                    <a href="#" class="btn">add to cart</a>
-                </div>
-            </div>
-
-            <div class="swiper-slide box">
-                <div class="icons">
-                    <a href="#" class="fas fa-search"></a>
-                    <a href="#" class="fas fa-heart"></a>
-                    <a href="#" class="fas fa-eye"></a>
-                </div>
-                <div class="image">
-                    <img src="image/book-7.png" alt="">
-                </div>
-                <div class="content">
-                    <h3>featured books</h3>
-                    <div class="price">$15.99 <span>$20.99</span></div>
-                    <a href="#" class="btn">add to cart</a>
-                </div>
-            </div>
-
-            <div class="swiper-slide box">
-                <div class="icons">
-                    <a href="#" class="fas fa-search"></a>
-                    <a href="#" class="fas fa-heart"></a>
-                    <a href="#" class="fas fa-eye"></a>
-                </div>
-                <div class="image">
-                    <img src="image/book-8.png" alt="">
-                </div>
-                <div class="content">
-                    <h3>featured books</h3>
-                    <div class="price">$15.99 <span>$20.99</span></div>
-                    <a href="#" class="btn">add to cart</a>
-                </div>
-            </div>
-
-            <div class="swiper-slide box">
-                <div class="icons">
-                    <a href="#" class="fas fa-search"></a>
-                    <a href="#" class="fas fa-heart"></a>
-                    <a href="#" class="fas fa-eye"></a>
-                </div>
-                <div class="image">
-                    <img src="image/book-9.png" alt="">
-                </div>
-                <div class="content">
-                    <h3>featured books</h3>
-                    <div class="price">$15.99 <span>$20.99</span></div>
-                    <a href="#" class="btn">add to cart</a>
-                </div>
-            </div>
-
-            <div class="swiper-slide box">
-                <div class="icons">
-                    <a href="#" class="fas fa-search"></a>
-                    <a href="#" class="fas fa-heart"></a>
-                    <a href="#" class="fas fa-eye"></a>
-                </div>
-                <div class="image">
-                    <img src="image/book-10.png" alt="">
-                </div>
-                <div class="content">
-                    <h3>featured books</h3>
-                    <div class="price">$15.99 <span>$20.99</span></div>
-                    <a href="#" class="btn">add to cart</a>
-                </div>
-            </div>
-
+        <div class="swiper-wrapper" id="featuredBooksWrapper">
+            <!-- Featured books sẽ được render bằng JavaScript -->
         </div>
 
         <div class="swiper-button-next"></div>
@@ -341,15 +221,35 @@
 
 <section class="newsletter">
 
-    <form action="">
-        <h3>subscribe for latest updates</h3>
-        <input type="email" name="" placeholder="enter your email" id="" class="box">
-        <input type="submit" value="subscribe" class="btn">
+    <form id="newsletterForm" onsubmit="handleNewsletter(event)">
+        <h3>Đăng ký nhận tin tức</h3>
+        <input type="email" placeholder="nhập email của bạn" id="newsletterEmail" required class="box">
+        <input type="submit" value="Đăng ký" class="btn">
+        <p id="newsletterMsg"></p>
     </form>
 
 </section>
 
 <!-- newsletter section ends -->
+
+<!-- Modal Giỏ hàng -->
+<div class="cart-modal" id="cartModal">
+    <div class="cart-content">
+        <div class="cart-header">
+            <h3>Giỏ hàng của tôi</h3>
+            <span class="close-btn" onclick="closeCart()">&times;</span>
+        </div>
+        <div class="cart-items" id="cartItems">
+            <p style="text-align:center; padding:2rem;">Giỏ hàng trống</p>
+        </div>
+        <div class="cart-footer" id="cartFooter" style="display:none;">
+            <p style="text-align:center; color:#666; font-size:0.9rem; margin-bottom:1rem;">
+                ℹ️ Các yêu cầu mượn sẽ được thủ thư xem xét và duyệt trong vòng 24 giờ.
+            </p>
+            <button class="btn" style="width:100%; margin-top:1rem;">Xác Nhận Mượn</button>
+        </div>
+    </div>
+</div>
 
 <!-- arrivals section starts  -->
 
@@ -552,10 +452,10 @@
 <section class="deal">
 
     <div class="content">
-        <h3>deal of the day</h3>
-        <h1>upto 50% off</h1>
-        <p>Good news for you, if you buy any book on Saturday and Sunday you will get 50% off and also you will get free delivery.</p>
-        <a href="#" class="btn">shop now</a>
+        <h3>Thư viện - Miễn phí cho tất cả</h3>
+        <h1>Cập nhật sách mới hàng tuần</h1>
+        <p>Thư viện HAB liên tục cập nhật những đầu sách mới nhất, từ khoa học, kinh tế, kỹ năng đến giải trí. Bạn có thể mượn miễn phí với hạn mượn 30 ngày và có thể gia hạn nếu cần.</p>
+        <a href="books.html" class="btn">khám phá ngay</a>
     </div>
 
     <div class="image">
@@ -741,7 +641,7 @@
     <div class="box-container">
 
         <div class="box">
-            <img src="image/logo_HAB.png" alt="" style="width: 250px; height: 250px;">
+            <img src="image/logo_HAB.png" alt="Logo HAB" class="footer-logo">
         </div>
 
         <div class="box">
@@ -780,7 +680,7 @@
         <a href="#" class="fab fa-pinterest"></a>
     </div>
 
-    <div class="credit"> created by <span>HungNguyen</span> | all rights reserved! </div>
+    <div class="credit"> created by <span>Nhóm 3</span> | all rights reserved! </div>
 
 </section>
 
@@ -788,29 +688,57 @@
 
 <!-- loader  -->
 
-<div class="loader-container">
-    <img src="image/loader-img.gif" alt="">
-</div>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 <script src="https://unpkg.com/swiper@7/swiper-bundle.min.js"></script>
 
 <!-- custom js file link  -->
 <script src="js/script.js"></script>
+
+<script>
+// Render featured books on page load
+function renderFeaturedBooks() {
+  const wrapper = document.getElementById('featuredBooksWrapper');
+  if (!wrapper) return;
+  
+  wrapper.innerHTML = booksDatabase.map(book => `
+    <div class="swiper-slide box">
+      <div class="icons">
+        <a href="#" class="fas fa-search" onclick="return false;"></a>
+        <a href="#" class="fas fa-heart" onclick="addToFavorites(${book.id}, '${book.name}'); return false;"></a>
+        <a href="book-details.html?id=${book.id}" class="fas fa-eye"></a>
+      </div>
+      <div class="stock-badge" style="position:absolute; top:1rem; right:1rem; background:${book.qty > 0 ? '#27ae60' : '#e74c3c'}; color:white; padding:0.5rem 1rem; border-radius:0.3rem; font-size:0.85rem; z-index:10; font-weight:bold;">
+        Còn: ${book.qty}
+      </div>
+      <div class="image">
+        <a href="book-details.html?id=${book.id}">
+          <img src="${book.image}" alt="${book.name}">
+        </a>
+      </div>
+      <div class="content">
+        <h3>${book.name}</h3>
+        <p style="font-size:0.85rem; color:#666; margin:0.3rem 0;">Tác giả: ${book.author}</p>
+        <p style="font-size:0.85rem; color:#27ae60; margin:0.5rem 0; font-weight:bold;">⭐ ${book.rating}/5 (${book.reviews} đánh giá)</p>
+        <a href="#" class="btn" onclick="addToCart(${book.id}, '${book.name}', 0, 1); return false;">yêu cầu mượn</a>
+      </div>
+    </div>
+  `).join('');
+  
+  // Reinitialize Swiper after rendering
+  setTimeout(() => {
+    if (swiper && swiper['featured-slider']) {
+      swiper['featured-slider'].update();
+    }
+  }, 100);
+}
+
+// Initialize featured books on DOMContentLoaded
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', renderFeaturedBooks);
+} else {
+  renderFeaturedBooks();
+}
+</script>
 
 </body>
 </html>

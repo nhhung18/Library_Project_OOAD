@@ -1,0 +1,289 @@
+/* --- 1. SETUP & BIẾN DÙNG CHUNG (Giống style cũ nhưng khai báo lại để độc lập) --- */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@100;300;400;500;600&display=swap');
+
+:root{
+    --green:#27ae60;
+    --dark-green:#219150;
+    --black:#444;
+    --light-color:#666;
+    --white: #fff;
+    --bg-gray: #f1f2f6;
+    --border: .1rem solid rgba(0,0,0,.1);
+    --box-shadow: 0 .5rem 1rem rgba(0,0,0,.05);
+}
+
+* {
+    font-family: 'Poppins', sans-serif;
+    margin: 0; padding: 0;
+    box-sizing: border-box;
+    outline: none; border: none;
+    text-decoration: none;
+    transition: all .2s linear;
+}
+
+html {
+    font-size: 62.5%; /* 1rem = 10px */
+    overflow-x: hidden;
+}
+
+body {
+    background-color: var(--bg-gray);
+}
+
+/* --- 2. CẤU TRÚC LAYOUT (Sidebar + Main) --- */
+.admin-container {
+    display: flex;
+    width: 100%;
+    min-height: 100vh;
+}
+
+/* --- 3. SIDEBAR (BÊN TRÁI) --- */
+.sidebar {
+    width: 260px;
+    background: var(--black);
+    color: var(--white);
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    position: fixed; /* Cố định menu khi cuộn */
+    height: 100vh;
+    left: 0; top: 0;
+    z-index: 1000;
+}
+
+.sidebar .logo {
+    font-size: 2.4rem;
+    color: var(--white);
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 3rem;
+    display: block;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    padding-bottom: 1.5rem;
+}
+.sidebar .logo i { color: var(--green); }
+
+.sidebar .menu-group-label {
+    font-size: 1.2rem;
+    color: #999;
+    text-transform: uppercase;
+    margin: 1.5rem 0 0.5rem 1rem;
+    font-weight: 600;
+}
+
+.sidebar .menu-item {
+    display: flex;
+    align-items: center;
+    padding: 1.2rem 1.5rem;
+    color: #ddd;
+    font-size: 1.5rem;
+    border-radius: .5rem;
+    margin-bottom: .5rem;
+}
+
+.sidebar .menu-item i {
+    margin-right: 1.5rem;
+    width: 20px;
+    text-align: center;
+}
+
+.sidebar .menu-item:hover, .sidebar .menu-item.active {
+    background: var(--green);
+    color: var(--white);
+    transform: translateX(5px);
+}
+
+.sidebar .logout-section {
+    margin-top: auto; /* Đẩy xuống đáy */
+    border-top: 1px solid rgba(255,255,255,0.1);
+    padding-top: 1rem;
+}
+.sidebar .logout-btn:hover {
+    background: #e74c3c; /* Màu đỏ khi hover nút thoát */
+}
+
+/* --- 4. MAIN CONTENT (BÊN PHẢI) --- */
+.main-content {
+    margin-left: 260px; /* Trừa chỗ cho sidebar */
+    flex: 1;
+    padding: 2rem 3rem;
+    width: calc(100% - 260px);
+}
+
+/* Header */
+.page-header {
+    background: var(--white);
+    padding: 1.5rem 2rem;
+    border-radius: 1rem;
+    box-shadow: var(--box-shadow);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 3rem;
+}
+
+.header-title h2 { font-size: 2.4rem; color: var(--black); }
+.header-title span { font-size: 1.4rem; color: var(--light-color); }
+
+.admin-profile { display: flex; align-items: center; gap: 1.5rem; }
+.admin-profile img { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid var(--green); }
+.admin-profile .profile-info { display: flex; flex-direction: column; text-align: right; }
+.admin-profile .name { font-size: 1.6rem; font-weight: 600; color: var(--black); }
+.admin-profile .role { font-size: 1.2rem; color: var(--light-color); }
+
+/* Dashboard Cards */
+.dashboard-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 2rem;
+    margin-bottom: 3rem;
+}
+
+.card {
+    background: var(--white);
+    padding: 2.5rem;
+    border-radius: 1rem;
+    box-shadow: var(--box-shadow);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-left: 5px solid var(--green);
+}
+.card:hover { transform: translateY(-5px); }
+
+.card h3 { font-size: 2.8rem; color: var(--black); }
+.card p { font-size: 1.4rem; color: var(--light-color); margin-top: 0.5rem; }
+.card i { font-size: 4rem; color: var(--green); opacity: 0.2; }
+
+/* Table Section */
+.table-container {
+    background: var(--white);
+    padding: 2rem;
+    border-radius: 1rem;
+    box-shadow: var(--box-shadow);
+}
+
+.table-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #eee;
+}
+.table-header h3 { font-size: 2rem; color: var(--black); }
+
+.btn-add {
+    background: var(--green);
+    color: var(--white);
+    padding: 1rem 2rem;
+    font-size: 1.4rem;
+    border-radius: .5rem;
+    cursor: pointer;
+}
+.btn-add:hover { background: var(--dark-green); }
+
+.table-responsive { width: 100%; overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; min-width: 600px; }
+
+thead tr { background-color: var(--green); color: var(--white); text-align: left; }
+th, td { padding: 1.5rem; font-size: 1.4rem; border-bottom: 1px solid #f1f1f1; }
+th { font-weight: 500; }
+tbody tr:hover { background-color: #f9f9f9; }
+
+/* Trạng thái */
+.status { padding: .5rem 1rem; border-radius: 2rem; font-size: 1.2rem; color: #fff; font-weight: 500; }
+.status.borrowed { background: #e67e22; } /* Màu cam */
+.status.returned { background: var(--green); }
+
+/* Hành động */
+.action-icons { display: flex; gap: 1.5rem; }
+.action-btn { font-size: 1.6rem; cursor: pointer; }
+.action-btn.edit { color: var(--green); }
+.action-btn.delete { color: #e74c3c; }
+
+/* Responsive cơ bản cho Admin */
+@media (max-width: 991px) {
+    html { font-size: 55%; }
+    .sidebar { width: 70px; padding: 2rem 1rem; }
+    .sidebar .logo, .sidebar .menu-group-label, .sidebar .menu-item span, .profile-info, .header-title span { display: none; }
+    .sidebar .menu-item i { margin-right: 0; font-size: 2rem; }
+    .main-content { margin-left: 70px; width: calc(100% - 70px); }
+    .sidebar .menu-item:hover { transform: none; background: var(--green); }
+}
+/* --- BỔ SUNG: MODAL & UTILITIES --- */
+
+/* Ẩn hiện section */
+.section-content {
+    display: none; /* Mặc định ẩn tất cả */
+    animation: fadeIn .3s linear;
+}
+
+.section-content.active {
+    display: block; /* Chỉ hiện cái nào có class active */
+}
+
+@keyframes fadeIn {
+    0% { opacity: 0; transform: translateY(10px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+
+/* Modal Popup (Form thêm mới) */
+.modal {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.6);
+    z-index: 2000;
+    display: none; /* Mặc định ẩn */
+    justify-content: center;
+    align-items: center;
+}
+
+.modal.active {
+    display: flex;
+}
+
+.modal-content {
+    background: #fff;
+    width: 500px;
+    padding: 2rem;
+    border-radius: 1rem;
+    position: relative;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 1rem;
+    margin-bottom: 2rem;
+}
+
+.modal-header h3 { font-size: 2rem; color: var(--black); }
+.close-btn { font-size: 2.5rem; cursor: pointer; color: #666; }
+.close-btn:hover { color: #e74c3c; }
+
+.form-group { margin-bottom: 1.5rem; }
+.form-group label { display: block; font-size: 1.4rem; color: var(--black); margin-bottom: .5rem; }
+.form-group input, .form-group select {
+    width: 100%;
+    padding: 1rem;
+    border: 1px solid #ccc;
+    border-radius: .5rem;
+    font-size: 1.4rem;
+}
+
+.form-actions { text-align: right; }
+.btn-save {
+    background: var(--green);
+    color: #fff;
+    padding: 1rem 3rem;
+    border-radius: .5rem;
+    font-size: 1.4rem;
+    cursor: pointer;
+    font-weight: 500;
+}
+.btn-save:hover { background: var(--dark-green); }

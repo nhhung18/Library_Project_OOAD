@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kho Sách - Thư viện HAB</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="css/style.css">
+
+    <style>
+        /* CSS riêng cho trang danh sách sách để hiển thị dạng lưới */
+        .products .box-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(25rem, 1fr));
+            gap: 1.5rem;
+        }
+
+        .products .box-container .box {
+            border: var(--border);
+            position: relative;
+            overflow: hidden;
+            text-align: center;
+            background: #fff;
+        }
+        
+        .products .box-container .box:hover {
+            border: var(--border-hover);
+        }
+
+        .products .box-container .box .image {
+            padding: 1rem;
+            background: linear-gradient(15deg, #eee 30%, #fff 30.1%);
+            height: 25rem;
+            overflow: hidden;
+        }
+
+        .products .box-container .box .image img {
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .products .box-container .box:hover .image img {
+            transform: scale(1.1);
+        }
+
+        .products .box-container .box .content {
+            padding: 1.5rem;
+        }
+
+        .products .box-container .box h3 {
+            font-size: 2rem;
+            color: var(--black);
+        }
+
+        .products .box-container .box .price {
+            font-size: 2.2rem;
+            color: var(--black);
+            padding-top: 1rem;
+        }
+
+        .products .box-container .box .price span {
+            font-size: 1.5rem;
+            color: var(--light-color);
+            text-decoration: line-through;
+            margin-left: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+
+<header class="header">
+    <div class="header-1">
+        <a href="index.html" class="logo"> Thư viện HAB </a>
+        <form action="" class="search-form">
+            <input type="search" name="" placeholder="tìm kiếm sách..." id="search-box">
+            <label for="search-box" class="fas fa-search"></label>
+        </form>
+        <div class="icons">
+            <div id="search-btn" class="fas fa-search"></div>
+            <a href="#" class="fas fa-heart"></a>
+            <a href="#" class="fas fa-shopping-cart" id="cart-btn">
+                <span id="cart-count" class="cart-badge">0</span>
+            </a>
+            <div id="login-btn" class="fas fa-user"></div>
+        </div>
+    </div>
+
+    <div class="header-2">
+        <nav class="navbar">
+            <a href="index.html">trang chủ</a>
+            <a href="books.html" style="color:var(--green);">sách</a> <a href="index.html#arrivals">tin tức</a>
+            <a href="index.html#reviews">đánh giá</a>
+        </nav>
+    </div>
+</header>
+<nav class="bottom-navbar">
+    <a href="index.html" class="fas fa-home"></a>
+    <a href="books.html" class="fas fa-list"></a>
+</nav>
+
+<section class="products" id="products">
+
+    <h1 class="heading"> <span>Kho Sách Của Chúng Tôi</span> </h1>
+
+    <div style="display: grid; grid-template-columns: 250px 1fr; gap: 2rem; margin-top: 2rem;">
+        <!-- Sidebar Lọc -->
+        <div style="background: #f9f9f9; padding: 1.5rem; border-radius: 0.5rem; height: fit-content;">
+            <h3 style="margin-top: 0; color: var(--black); font-size: 1.8rem;">Lọc Sách</h3>
+            
+            <!-- Search -->
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; font-weight: bold; margin-bottom: 0.5rem; font-size: 1.4rem;">Tìm kiếm</label>
+                <input type="text" id="searchInput" placeholder="Tên sách, tác giả..." style="width: 100%; padding: 0.8rem; border: 1px solid #ccc; border-radius: 0.3rem; font-size: 1.4rem;">
+            </div>
+            
+            <!-- Category Filter -->
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; font-weight: bold; margin-bottom: 0.5rem; font-size: 1.4rem;">Thể loại</label>
+                <div id="categoryFilter" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <!-- Sẽ được load bằng JavaScript -->
+                </div>
+            </div>
+            
+            <!-- Sort -->
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; font-weight: bold; margin-bottom: 0.5rem; font-size: 1.4rem;">Sắp xếp</label>
+                <select id="sortSelect" style="width: 100%; padding: 0.8rem; border: 1px solid #ccc; border-radius: 0.3rem; font-size: 1.4rem;">
+                    <option value="name-asc">Tên A-Z</option>
+                    <option value="name-desc">Tên Z-A</option>
+                    <option value="rating-desc">Đánh giá cao nhất</option>
+                    <option value="rating-asc">Đánh giá thấp nhất</option>
+                </select>
+            </div>
+            
+            <!-- Reset Button -->
+            <button onclick="resetFilters()" style="width: 100%; padding: 1rem; background: var(--green); color: white; border: none; border-radius: 0.3rem; cursor: pointer; font-size: 1.4rem; font-weight: bold;">Reset</button>
+        </div>
+        
+        <!-- Books Grid -->
+        <div>
+            <p style="font-size: 1.4rem; color: #666; margin: 0 0 1rem 0;">Hiển thị: <strong id="bookCount">0</strong> cuốn</p>
+            <div class="box-container" id="booksContainer">
+                <!-- Sách sẽ được render bằng JavaScript -->
+            </div>
+        </div>
+    </div>
+
+</section>
+
+<section class="footer">
+    <div class="box-container">
+        <div class="box">
+            <img src="image/logo_HAB.png" alt="Logo HAB" class="footer-logo">
+        </div>
+        <div class="box">
+            <h3>quick links</h3>
+            <a href="index.html"> <i class="fas fa-arrow-right"></i> home </a>
+            <a href="books.html"> <i class="fas fa-arrow-right"></i> sách </a>
+        </div>
+        </div>
+    <div class="credit"> created by <span>Nhóm 3</span> | all rights reserved! </div>
+</section>
+
+<script src="js/script.js"></script>
+<script>
+// Render books list with filter & search
+let allBooks = booksDatabase;
+let filteredBooks = booksDatabase;
+
+function renderBooks() {
+  const container = document.getElementById('booksContainer');
+  container.innerHTML = filteredBooks.map(book => `
+    <div class="box">
+      <div class="icons">
+        <a href="#" class="fas fa-search"></a>
+        <a href="#" class="fas fa-heart" onclick="addToFavorites(${book.id}, '${book.name}'); return false;"></a>
+        <a href="book-details.html?id=${book.id}" class="fas fa-eye"></a>
+      </div>
+      <div class="stock-badge" style="position:absolute; top:1rem; right:1rem; background:${book.qty > 0 ? '#27ae60' : '#e74c3c'}; color:white; padding:0.5rem 1rem; border-radius:0.3rem; font-size:0.85rem; z-index:10; font-weight:bold;">
+        Còn: ${book.qty}
+      </div>
+      <div class="image">
+        <img src="${book.image}" alt="${book.name}">
+      </div>
+      <div class="content">
+        <h3>${book.name}</h3>
+        <p style="font-size:0.9rem; color:#666; margin:0.5rem 0;">Tác giả: ${book.author}</p>
+        <p style="font-size:0.85rem; color:#27ae60; margin:0.3rem 0;">⭐ ${book.rating}/5</p>
+        <div class="price" style="display:none;">$${book.price}</div>
+        <a href="book-details.html?id=${book.id}" class="btn">xem chi tiết</a>
+      </div>
+    </div>
+  `).join('');
+  
+  document.getElementById('bookCount').textContent = filteredBooks.length;
+}
+
+function loadCategories() {
+  const categories = [...new Set(booksDatabase.map(b => b.category))];
+  const categoryFilter = document.getElementById('categoryFilter');
+  
+  categoryFilter.innerHTML = categories.map(cat => `
+    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 1.4rem;">
+      <input type="checkbox" value="${cat}" onchange="applyFilters()" style="cursor: pointer;">
+      <span>${cat} (${booksDatabase.filter(b => b.category === cat).length})</span>
+    </label>
+  `).join('');
+}
+
+function applyFilters() {
+  const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+  const selectedCategories = Array.from(document.querySelectorAll('#categoryFilter input:checked')).map(el => el.value);
+  const sortOption = document.getElementById('sortSelect').value;
+  
+  // Filter
+  filteredBooks = booksDatabase.filter(book => {
+    const matchesSearch = book.name.toLowerCase().includes(searchTerm) || 
+                         book.author.toLowerCase().includes(searchTerm) ||
+                         book.category.toLowerCase().includes(searchTerm);
+    const matchesCategory = selectedCategories.length === 0 || selectedCategories.includes(book.category);
+    return matchesSearch && matchesCategory;
+  });
+  
+  // Sort
+  switch(sortOption) {
+    case 'name-asc':
+      filteredBooks.sort((a, b) => a.name.localeCompare(b.name));
+      break;
+    case 'name-desc':
+      filteredBooks.sort((a, b) => b.name.localeCompare(a.name));
+      break;
+    case 'rating-desc':
+      filteredBooks.sort((a, b) => b.rating - a.rating);
+      break;
+    case 'rating-asc':
+      filteredBooks.sort((a, b) => a.rating - b.rating);
+      break;
+  }
+  
+  renderBooks();
+}
+
+function resetFilters() {
+  document.getElementById('searchInput').value = '';
+  document.querySelectorAll('#categoryFilter input').forEach(el => el.checked = false);
+  document.getElementById('sortSelect').value = 'name-asc';
+  filteredBooks = booksDatabase;
+  renderBooks();
+}
+
+// Initialize on page load
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => {
+    loadCategories();
+    renderBooks();
+    
+    // Add event listeners
+    document.getElementById('searchInput').addEventListener('input', applyFilters);
+    document.getElementById('sortSelect').addEventListener('change', applyFilters);
+  });
+} else {
+  loadCategories();
+  renderBooks();
+  
+  document.getElementById('searchInput').addEventListener('input', applyFilters);
+  document.getElementById('sortSelect').addEventListener('change', applyFilters);
+}
+</script>
+
+</body>
+</html>
