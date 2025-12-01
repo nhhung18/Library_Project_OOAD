@@ -9,13 +9,13 @@ let booksData = [
 ];
 
 let loansData = [
-    { id: "PM001", user: "Nguyễn Văn A", book: "Đắc Nhân Tâm", date: "2025-11-25", status: "borrowed" },
-    { id: "PM002", user: "Trần Thị B", book: "Nhà Giả Kim", date: "2025-11-20", status: "returned" },
+    { id: "PM001", user_name: "anguyenvan", full_name: "Nguyễn Văn A", book: "Đắc Nhân Tâm", date: "2025-11-25", status: "borrowed" },
+    { id: "PM002", user_name:"btranthi", full_name: "Trần Thị B", book: "Nhà Giả Kim", date: "2025-11-20", status: "returned" },
 ];
 
 let readersData = [
-    { id: "DG001", name: "Nguyễn Văn A", email: "vana@gmail.com", date: "2025-01-10", rank: "Vàng" },
-    { id: "DG002", name: "Trần Thị B", email: "thib@gmail.com", date: "2025-02-15", rank: "Bạc" },
+    { id: "DG001", user_name: "anguyenvan", full_name: "Nguyễn Văn A", email: "vana@gmail.com", date: "2025-01-10", role: "Độc giả", phone_num: "0372845600"},
+    { id: "DG002", user_name: "btranthi", full_name: "Trần Thị B", email: "thib@gmail.com", date: "2025-02-15", role: "Khách", phone_num: "03729103473"},
 ];
 
 let employeesData = [
@@ -101,10 +101,13 @@ function renderReaderTable() {
         tbody.innerHTML += `
             <tr>
                 <td>${item.id}</td>
-                <td>${item.name}</td>
+                <td>${item.user_name}</td>
+                <td>${item.full_name}</td>
                 <td>${item.email}</td>
+                <td>${item.phone_num}</td>
+                <td>${item.role}</td>
                 <td>${item.date}</td>
-                <td><span style="color:var(--green); font-weight:bold">${item.rank}</span></td>
+
                 <td class="action-icons">
                     <button class="action-btn delete" onclick="deleteItem('reader', '${item.id}')"><i class="fas fa-trash"></i></button>
                 </td>

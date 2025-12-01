@@ -1,9 +1,8 @@
 CREATE DATABASE ooda_g3
 USE ooda_g3
-
 CREATE TABLE `users` (
   `id` INT PRIMARY KEY AUTO_INCREMENT,
-  `username` VARCHAR(255) UNIQUE NOT NULL,
+  `user_name` VARCHAR(255) UNIQUE NOT NULL,
   `full_name` VARCHAR(255) NOT NULL,
   `email` VARCHAR(255) UNIQUE NOT NULL,
   `password` VARCHAR(255) NOT NULL,
@@ -13,10 +12,12 @@ CREATE TABLE `users` (
   `created_at` TIMESTAMP,
   `updated_at` TIMESTAMP
 );
+alter table users add column address varchar(255)
+select * from users
 
 CREATE TABLE `roles` (
   `id` INT PRIMARY KEY AUTO_INCREMENT,
-  `role_name` ENUM ('ADMIN', 'LIBRARIAN', 'STAFF') NOT NULL
+  `role_name` ENUM ('ADMIN', 'LIBRARIAN', 'STAFF', 'GUEST') NOT NULL
 );
 
 CREATE TABLE `work_shifts` (
