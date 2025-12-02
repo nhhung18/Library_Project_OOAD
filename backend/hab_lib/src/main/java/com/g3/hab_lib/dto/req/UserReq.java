@@ -4,6 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.security.Timestamp;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -13,7 +15,7 @@ public class UserReq {
     private String email;
     private String password;
     private String address;
-//    private int roleId;
+    private int roleId;
     private String phoneNum;
     private String avatarUrl;
 }

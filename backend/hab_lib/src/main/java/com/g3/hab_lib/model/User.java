@@ -3,6 +3,8 @@ package com.g3.hab_lib.model;
 import com.g3.hab_lib.model.base.BaseIdObject;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CurrentTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.sql.Timestamp;
 import java.util.List;
@@ -25,7 +27,7 @@ public class User extends BaseIdObject {
     @Column(name = "email", unique = true, nullable = false, length = 255)
     private String email;
 
-    @Column(name = "password", unique = true, nullable = false, length = 255)
+    @Column(name = "password", nullable = false, length = 255)
     private String password;
 
     @Column(name = "address")
@@ -40,9 +42,11 @@ public class User extends BaseIdObject {
     @Column(name = "avatar_url", length = 255)
     private String avatarUrl;
 
+    @UpdateTimestamp
     @Column(name = "update_at", updatable = false, insertable = false)
     private Timestamp updateAt;
 
+    @CurrentTimestamp
     @Column(name = "create_at", updatable = false, insertable = false)
     private Timestamp createAt;
 }

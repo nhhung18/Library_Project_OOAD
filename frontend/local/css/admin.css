@@ -173,6 +173,34 @@ body {
 }
 .table-header h3 { font-size: 2rem; color: var(--black); }
 
+/* Controls shown in table header (sort/filter area) */
+.table-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+.table-control-label { font-size: 1.25rem; color: var(--black); margin-right: .4rem; }
+.table-control-select {
+    appearance: none;
+    -webkit-appearance: none;
+    padding: .6rem .9rem;
+    font-size: 1.3rem;
+    border-radius: .6rem;
+    border: 1px solid rgba(0,0,0,.12);
+    background: linear-gradient(#fff,#f8faf8);
+    min-width: 160px;
+    cursor: pointer;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.04);
+}
+.table-control-select:focus, .table-control-select:hover {
+    border-color: var(--green);
+    box-shadow: 0 8px 28px rgba(33,145,80,0.12);
+}
+
+/* Make the control visually stand out on the header */
+.table-controls { padding: .6rem; border-radius: .6rem; background: rgba(39,174,96,0.06); }
+.table-controls .btn-add { margin-left: .6rem; }
+
 .btn-add {
     background: var(--green);
     color: var(--white);
@@ -183,11 +211,13 @@ body {
 }
 .btn-add:hover { background: var(--dark-green); }
 
-.table-responsive { width: 100%; overflow-x: auto; }
-table { width: 100%; border-collapse: collapse; min-width: 600px; }
+.table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+/* allow tables to shrink below 600px and wrap content instead of forcing page overflow */
+table { width: 100%; border-collapse: collapse; min-width: 0; table-layout: auto; }
 
 thead tr { background-color: var(--green); color: var(--white); text-align: left; }
-th, td { padding: 1.5rem; font-size: 1.4rem; border-bottom: 1px solid #f1f1f1; }
+/* make cells wrap long text and avoid overflow */
+th, td { padding: 1.5rem; font-size: 1.4rem; border-bottom: 1px solid #f1f1f1; word-break: break-word; white-space: normal; }
 th { font-weight: 500; }
 tbody tr:hover { background-color: #f9f9f9; }
 
@@ -211,6 +241,32 @@ tbody tr:hover { background-color: #f9f9f9; }
     .main-content { margin-left: 70px; width: calc(100% - 70px); }
     .sidebar .menu-item:hover { transform: none; background: var(--green); }
 }
+
+/* Additional responsive tweaks for small screens */
+@media (max-width: 640px) {
+    html { font-size: 50%; }
+
+    .main-content { padding: 1.2rem; }
+
+    /* reduce table cell padding and font size */
+    th, td { padding: .8rem; font-size: 1.2rem; }
+
+    /* make table header stick and allow horizontal scrolling inside container rather than overflowing page */
+    .table-responsive { overflow-x: auto; }
+
+    /* ensure table doesn't force layout larger than viewport */
+    table { min-width: 0; }
+
+    /* Modals should size to viewport on small devices */
+    .modal-content { width: calc(100% - 2.4rem); max-width: 560px; padding: 1.4rem; }
+}
+    /* stack controls below header title on small screens */
+    .table-header { flex-direction: column; align-items: flex-start; gap: .8rem; }
+    .table-controls { width: 100%; justify-content: flex-start; padding: .4rem 0; background: transparent; box-shadow: none; }
+    .table-controls .btn-add { margin-left: 0; }
+
+/* style for no-data rows so message is readable on small screens */
+.no-data { text-align:center; color: #666; padding: 1.2rem; font-size: 1.4rem; }
 /* --- BỔ SUNG: MODAL & UTILITIES --- */
 
 /* Ẩn hiện section */
@@ -246,12 +302,33 @@ tbody tr:hover { background-color: #f9f9f9; }
 
 .modal-content {
     background: #fff;
-    width: 500px;
+    /* fluid width: shrinks on small screens, grows on large screens but capped */
+    width: clamp(320px, 60vw, 860px);
     padding: 2rem;
     border-radius: 1rem;
     position: relative;
     box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+     /* avoid modal growing taller than viewport, keep rounded corners visible
+         by hiding overflow on the container and letting the inner form scroll */
+     max-height: 100vh;
+     overflow: hidden; /* clip children so corners remain rounded */
+    -webkit-overflow-scrolling: touch;
+    /* smooth transition when viewport resizes */
+    transition: width .18s ease, transform .18s ease;
 }
+
+/* Make the modal content layout column so header stays fixed and body can scroll */
+.modal-content > form {
+    display: block; /* forms remain block */
+    /* let the form take the remaining space and scroll internally */
+    max-height: calc(90vh - 6.6rem); /* allow for header + padding estimate */
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-right: 1rem; /* avoid scrollbar overlapping input borders */
+}
+
+/* ensure modal header remains visible and doesn't shrink */
+.modal-content .modal-header { flex: 0 0 auto; }
 
 .modal-header {
     display: flex;

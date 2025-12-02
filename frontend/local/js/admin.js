@@ -1,27 +1,11 @@
-/* js/admin.js - Full Interactive Version */
-
 // --- 1. DỮ LIỆU KHỞI TẠO ---
-let booksData = [
-    { id: 1, name: "Đắc Nhân Tâm", author: "Dale Carnegie", category: "Kỹ năng", qty: 15 },
-    { id: 2, name: "Nhà Giả Kim", author: "Paulo Coelho", category: "Văn học", qty: 8 },
-    { id: 3, name: "Cha Giàu Cha Nghèo", author: "Robert Kiyosaki", category: "Kinh tế", qty: 12 },
-    { id: 4, name: "Clean Code", author: "Robert C. Martin", category: "Công nghệ", qty: 5 }
-];
+let booksData = [];
 
-let loansData = [
-    { id: "PM001", user_name: "anguyenvan", full_name: "Nguyễn Văn A", book: "Đắc Nhân Tâm", date: "2025-11-25", status: "borrowed" },
-    { id: "PM002", user_name:"btranthi", full_name: "Trần Thị B", book: "Nhà Giả Kim", date: "2025-11-20", status: "returned" },
-];
+let loansData = [];
 
-let readersData = [
-    { id: "DG001", user_name: "anguyenvan", full_name: "Nguyễn Văn A", email: "vana@gmail.com", date: "2025-01-10", role: "Độc giả", phone_num: "0372845600"},
-    { id: "DG002", user_name: "btranthi", full_name: "Trần Thị B", email: "thib@gmail.com", date: "2025-02-15", role: "Khách", phone_num: "03729103473"},
-];
+let readersData = [];
 
-let employeesData = [
-    { id: "NV01", name: "Admin User", role: "Quản lý", shift: "Full-time", status: "Đang làm" },
-    { id: "NV02", name: "Lê Văn C", role: "Thủ thư", shift: "Sáng", status: "Đang làm" },
-];
+let employeesData = [];
 
 // --- 2. KHỞI TẠO VÀ RENDER ---
 document.addEventListener('DOMContentLoaded', () => {
@@ -32,7 +16,8 @@ document.addEventListener('DOMContentLoaded', () => {
 function renderAllTables() {
     renderBookTable();
     renderLoanTable();
-    renderReaderTable();
+    // always pass the current readersData so renderReaderTable has a defined array
+    renderReaderTable(readersData);
     renderEmployeeTable();
 }
 
@@ -50,24 +35,39 @@ function updateDashboardStats() {
 function renderBookTable() {
     const tbody = document.querySelector('#bookTable tbody');
     tbody.innerHTML = "";
+    // show a friendly message if no books
+    if (!Array.isArray(booksData) || booksData.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="no-data">Hiện không có sách trong kho</td></tr>`;
+        return;
+    }
     booksData.forEach(item => {
         tbody.innerHTML += `
             <tr>
                 <td>#${item.id}</td>
-                <td><b>${item.name}</b></td>
-                <td>${item.author}</td>
-                <td>${item.category}</td>
-                <td>${item.qty}</td>
+                <td>${item.userName}</td>
+                <td>${item.fullName}</td>
+                <td>${item.email}</td>
+                <td>${item.roleId}</td>
+                <td>${item.phoneNum}</td>
+                <td>${item.createAt}</td>
                 <td class="action-icons">
-                    <button class="action-btn delete" onclick="deleteItem('book', ${item.id})"><i class="fas fa-trash"></i></button>
+                    <button class="action-btn delete" onclick="deleteItem('book', ${item.id})">
+                        <i class="fas fa-trash"></i>
+                    </button>
                 </td>
             </tr>`;
     });
 }
 
+
 function renderLoanTable() {
     const tbody = document.querySelector('#loanTable tbody');
     tbody.innerHTML = "";
+    // show a friendly message if no loans
+    if (!Array.isArray(loansData) || loansData.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="no-data">Hiện không có phiếu mượn / trả</td></tr>`;
+        return;
+    }
     loansData.forEach(item => {
         let isBorrowed = item.status === 'borrowed';
         let statusHtml = isBorrowed 
@@ -94,19 +94,89 @@ function renderLoanTable() {
     });
 }
 
-function renderReaderTable() {
+
+// RENDER READERS
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('menu-readers').addEventListener('click', function(e) {
+    e.preventDefault();
+    const el = this;
+    try {
+      switchTab('readers', el);  // hiện khu vực trước
+      loadReaders();        // load dữ liệu (không cần await)
+    } catch (err) {
+      console.error('handle click error:', err);
+    }
+  });
+});
+
+async function loadReaders() {
+    try {
+        const res = await fetch("http://localhost:8080/api/users/customers?sort=createAt");
+        const json = await res.json();
+
+        // API may return { data: { content: [...] } } or directly return an array
+        const data = json?.data?.content ?? json;
+
+        if (!Array.isArray(data)) {
+            console.error("Dữ liệu API không phải array:", data);
+            return;
+        }
+
+        // update the shared readersData and re-render (apply current sort)
+        readersData = data;
+        applyReaderSortAndRender();
+    } catch (err) {
+        console.error('loadReaders error:', err);
+    }
+}
+
+function renderReaderTable(data = readersData) {
     const tbody = document.querySelector('#readerTable tbody');
     tbody.innerHTML = "";
-    readersData.forEach(item => {
+    // ensure data is an array
+    if (!Array.isArray(data)) {
+        console.error('renderReaderTable expected array but got', data);
+        tbody.innerHTML = `<tr><td colspan="8" class="no-data">Không thể tải danh sách độc giả</td></tr>`;
+        return;
+    }
+
+    // no-data message when there are zero readers
+    if (data.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" class="no-data">Hiện không có Khách hoặc Độc giả nào trong hệ thống</td></tr>`;
+        return;
+    }
+    data.forEach(item => {
+        // normalize/format role for display (roleId may be numeric or a string code)
+        const rawRole = (item.roleId ?? item.role ?? '').toString();
+        let roleLabel;
+        switch (rawRole.toLowerCase()) {
+            case '8':
+                roleLabel = 'Độc giả';
+                break;
+            case '9':
+                roleLabel = 'Khách';
+                break;
+            default:
+                roleLabel = rawRole || 'Không xác định';
+        }
         tbody.innerHTML += `
             <tr>
                 <td>${item.id}</td>
-                <td>${item.user_name}</td>
-                <td>${item.full_name}</td>
-                <td>${item.email}</td>
-                <td>${item.phone_num}</td>
-                <td>${item.role}</td>
-                <td>${item.date}</td>
+                <td title="${escapeHtml(String(item.userName ?? ''))}">${item.userName}</td>
+                let currentReaderSort = 'none';
+                <td title="${escapeHtml(String(item.fullName ?? ''))}">${item.fullName}</td>
+                <td title="${escapeHtml(String(item.email ?? ''))}">${item.email}</td>
+                <td title="${escapeHtml(String(item.phoneNum ?? ''))}">${item.phoneNum}</td>
+                <td title="${escapeHtml(String(roleLabel))}">${roleLabel}</td>
+                <td title="${escapeHtml(String(item.createAt ?? ''))}">${item.createAt}</td>
+                    // hook up reader sort select (if present)
+                    const sortEl = document.getElementById('readerSort');
+                    if (sortEl) {
+                        sortEl.addEventListener('change', (e) => {
+                            currentReaderSort = e.target.value;
+                            applyReaderSortAndRender();
+                        });
+                    }
 
                 <td class="action-icons">
                     <button class="action-btn delete" onclick="deleteItem('reader', '${item.id}')"><i class="fas fa-trash"></i></button>
@@ -115,17 +185,83 @@ function renderReaderTable() {
     });
 }
 
-function renderEmployeeTable() {
+
+// RENDER EMPLOYEE
+document.addEventListener('DOMContentLoaded', () => {
+    const menuEmp = document.getElementById('menu-employees');
+    if (menuEmp) {
+        menuEmp.addEventListener('click', function(e) {
+    e.preventDefault();
+    const el = this;
+    try {
+      switchTab('employees', el);  // hiện khu vực trước
+      loadEmployees();        // load dữ liệu (không cần await)
+    } catch (err) {
+      console.error('handle click error:', err);
+    }
+        });
+    }
+});
+
+async function loadEmployees() {
+    try {
+        const res = await fetch("http://localhost:8080/api/users/staffs");
+        const json = await res.json();
+
+        // API may return { data: { content: [...] } } or directly return an array
+        const data = json?.data?.content ?? json;
+
+        if (!Array.isArray(data)) {
+            console.error("Dữ liệu API không phải array:", data);
+            return;
+        }
+
+        // update the shared readersData and re-render
+        employeesData = data;
+        renderEmployeeTable(employeesData);
+    } catch (err) {
+        console.error('loadEmployees error:', err);
+    }
+}
+
+function renderEmployeeTable(data = employeesData) {
     const tbody = document.querySelector('#employeeTable tbody');
     tbody.innerHTML = "";
-    employeesData.forEach(item => {
+    // ensure data is an array
+    if (!Array.isArray(data)) {
+        console.error('renderReaderTable expected array but got', data);
+        tbody.innerHTML = `<tr><td colspan="8" class="no-data">Không thể tải danh sách độc giả</td></tr>`;
+        return;
+    }
+
+    // no-data message when there are zero employees
+    if (data.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="no-data">Hiện không có nhân sự nào trong hệ thống</td></tr>`;
+        return;
+    }
+    data.forEach(item => {
+        // normalize/format role for display
+        const rawRole = (item.roleId ?? item.role ?? '').toString();
+        let roleLabel;
+        switch (rawRole.toLowerCase()) {
+            case '1':
+                roleLabel = 'Quản lý';
+                break;
+            case '2':
+                roleLabel = 'Nhân viên';
+                break;
+            default:
+                roleLabel = rawRole || 'Không xác định';
+        }
         tbody.innerHTML += `
             <tr>
                 <td>${item.id}</td>
-                <td>${item.name}</td>
-                <td>${item.role}</td>
-                <td>${item.shift}</td>
-                <td><span style="color:green">${item.status}</span></td>
+                <td title="${escapeHtml(String(item.userName ?? ''))}">${item.userName}</td>
+                <td title="${escapeHtml(String(item.fullName ?? ''))}">${item.fullName}</td>
+                <td title="${escapeHtml(String(item.email ?? ''))}">${item.email}</td>
+                <td title="${escapeHtml(String(item.phoneNum ?? ''))}">${item.phoneNum}</td>
+                <td title="${escapeHtml(String(roleLabel))}">${roleLabel}</td>
+                <td title="${escapeHtml(String(item.createAt ?? ''))}">${item.createAt}</td>
                 <td class="action-icons">
                     <button class="action-btn delete" onclick="deleteItem('employee', '${item.id}')"><i class="fas fa-trash"></i></button>
                 </td>
@@ -133,6 +269,41 @@ function renderEmployeeTable() {
     });
 }
 
+
+
+                function applyReaderSortAndRender() {
+                    // compute a sorted copy according to currentReaderSort
+                    if (!Array.isArray(readersData)) return renderReaderTable([]);
+
+                    const arr = [...readersData];
+                    switch (currentReaderSort) {
+                        case 'id':
+                            arr.sort((a,b) => (parseInt(a.id) || 0) - (parseInt(b.id) || 0));
+                            break;
+                        case 'username':
+                            arr.sort((a,b) => String(a.userName ?? '').localeCompare(String(b.userName ?? '')));
+                            break;
+                        case 'fullname':
+                            arr.sort((a,b) => String(a.fullName ?? '').localeCompare(String(b.fullName ?? '')));
+                            break;
+                        case 'email':
+                            arr.sort((a,b) => String(a.email ?? '').localeCompare(String(b.email ?? '')));
+                            break;
+                        case 'role':
+                            arr.sort((a,b) => String((a.roleId ?? a.role ?? '')).localeCompare(String((b.roleId ?? b.role ?? ''))));
+                            break;
+                        case 'createAt':
+                            // newest first
+                            arr.sort((a,b) => new Date(b.createAt || 0) - new Date(a.createAt || 0));
+                            break;
+                        case 'none':
+                        default:
+                            // keep original order
+                            break;
+                    }
+
+                    renderReaderTable(arr);
+                }
 // --- 4. XỬ LÝ FORM SUBMIT (THÊM MỚI) ---
 function handleFormSubmit(event, type) {
     event.preventDefault(); // Chặn load lại trang
@@ -160,12 +331,25 @@ function handleFormSubmit(event, type) {
         closeModal('loanModal');
     }
     else if (type === 'reader') {
+        // read the new form field ids from admin.html
+        const userName = document.getElementById('readerUserName')?.value || '';
+        const fullName = document.getElementById('readerFullName')?.value || '';
+        const email = document.getElementById('readerEmail')?.value || '';
+        const phoneNum = document.getElementById('readerPhone')?.value || '';
+        const address = document.getElementById('readerAddress')?.value || '';
+        const roleValue = document.getElementById('readerRole')?.value || '';
+
         const newReader = {
             id: "DG" + (readersData.length + 1).toString().padStart(3, '0'),
-            name: document.getElementById('readerName').value,
-            email: document.getElementById('readerEmail').value,
-            date: new Date().toISOString().split('T')[0], // Ngày hiện tại
-            rank: document.getElementById('readerRank').value
+            userName,
+            fullName,
+            email,
+            phoneNum,
+            address,
+            // store role as whatever the select returns (string code or numeric)
+            roleId: roleValue || 'GUEST',
+            // store created at (date string)
+            createAt: new Date().toISOString().split('T')[0]
         };
         readersData.push(newReader);
         closeModal('readerModal');
@@ -231,6 +415,13 @@ function openModal(modalId) {
 
 function closeModal(modalId) {
     document.getElementById(modalId).classList.remove('active');
+}
+
+// helper to escape html when inserting into title attribute
+function escapeHtml(str) {
+    return String(str).replace(/[&<>\"']/g, function (s) {
+        return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[s];
+    });
 }
 
 window.onclick = function(event) {

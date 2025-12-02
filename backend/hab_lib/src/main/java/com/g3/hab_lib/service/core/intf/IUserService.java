@@ -10,7 +10,9 @@ import java.util.List;
 
 public interface IUserService {
 
-    Page<UserResp> getAllUser(Pageable pageable);
+    Page<UserResp> getAllCustomer(Pageable pageable);
 
-//    void createUser(UserReq form) throws Exception;
+    Page<UserResp> getAllStaff(Pageable pageable);
+
+    UserReq createUser(UserReq form) throws Exception;
 }

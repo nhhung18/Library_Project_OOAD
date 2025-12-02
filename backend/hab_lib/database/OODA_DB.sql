@@ -1,5 +1,6 @@
 CREATE DATABASE ooda_g3
 USE ooda_g3
+
 CREATE TABLE `users` (
   `id` INT PRIMARY KEY AUTO_INCREMENT,
   `user_name` VARCHAR(255) UNIQUE NOT NULL,
@@ -13,7 +14,6 @@ CREATE TABLE `users` (
   `updated_at` TIMESTAMP
 );
 alter table users add column address varchar(255)
-select * from users
 
 CREATE TABLE `roles` (
   `id` INT PRIMARY KEY AUTO_INCREMENT,
