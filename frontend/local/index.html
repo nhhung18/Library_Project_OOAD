@@ -36,7 +36,23 @@
             <a href="#" id="cart-btn" class="fas fa-shopping-cart" title="Giỏ hàng">
                 <span id="cart-count" class="cart-badge">0</span>
             </a>
-            <div id="login-btn" class="fas fa-user" title="Tài khoản"></div>
+            <div id="login-btn" class="fas fa-user" title="Tài khoản" style="position: relative; cursor: pointer;"></div>
+            
+            <!-- User Dropdown Menu -->
+            <div id="userDropdown" class="user-dropdown" style="display: none; position: absolute; top: 60px; right: 0; background: white; border: 1px solid #ddd; border-radius: 0.5rem; box-shadow: 0 2px 10px rgba(0,0,0,0.1); z-index: 1000; min-width: 280px;">
+                <div style="padding: 1rem; border-bottom: 1px solid #eee;">
+                    <p id="userDropdownName" style="margin: 0; font-weight: bold; color: #333; font-size: 0.95rem;"></p>
+                    <p id="userDropdownEmail" style="margin: 0.3rem 0 0 0; font-size: 0.8rem; color: #999;"></p>
+                </div>
+                <ul style="list-style: none; margin: 0; padding: 0;">
+                    <li><a href="#" onclick="goToProfile(); return false;" style="display: block; padding: 0.85rem 1.1rem; color: #333; text-decoration: none; transition: all 0.2s; border-bottom: 1px solid #eee; font-size: 0.95rem;">Hồ Sơ Cá Nhân</a></li>
+                    <li><a href="#" onclick="goToBorrowing(); return false;" style="display: block; padding: 0.85rem 1.1rem; color: #333; text-decoration: none; transition: all 0.2s; border-bottom: 1px solid #eee; font-size: 0.95rem;">Sách Đang Mượn</a></li>
+                    <li><a href="#" onclick="goToMembership(); return false;" style="display: block; padding: 0.85rem 1.1rem; color: #333; text-decoration: none; transition: all 0.2s; border-bottom: 1px solid #eee; font-size: 0.95rem;">Đăng Ký Thẻ</a></li>
+                    <li><a href="#" onclick="goToFavorites(); return false;" style="display: block; padding: 0.85rem 1.1rem; color: #333; text-decoration: none; transition: all 0.2s; border-bottom: 1px solid #eee; font-size: 0.95rem;">Yêu Thích</a></li>
+                    <li><a href="#" onclick="goToPassword(); return false;" style="display: block; padding: 0.85rem 1.1rem; color: #333; text-decoration: none; transition: all 0.2s; border-bottom: 1px solid #eee; font-size: 0.95rem;">Đổi Mật Khẩu</a></li>
+                    <li><a href="#" onclick="handleLogout(); return false;" style="display: block; padding: 0.85rem 1.1rem; color: #e74c3c; text-decoration: none; transition: all 0.2s; font-weight: bold; font-size: 0.95rem;">Đăng Xuất</a></li>
+                </ul>
+            </div>
         </div>
 
     </div>
@@ -45,10 +61,8 @@
         <nav class="navbar">
             <a href="#home">Trang chủ</a>
             <a href="books.html">Sách</a>
-            <a href="#arrivals">Tin tức</a>
             <a href="#reviews">Đánh giá</a>
             <a href="#blogs">Về chúng tôi</a>
-            <a href="my-account.html" id="myAccountLink" style="display:none;">Tài Khoản</a>
         </nav>
     </div>
 
@@ -72,16 +86,9 @@
 
     <div id="close-login-btn" class="fas fa-times"></div>
 
-    <form id="loginForm" onsubmit="handleLogin(event)">
+    <!-- Login Form -->
+    <form id="loginFormSubmit" onsubmit="handleLoginSubmit(event)">
         <h3 id="formTitle">Đăng nhập</h3>
-        
-        <!-- Login Type Selection -->
-        <div style="display: flex; gap: 1rem; margin-bottom: 2rem;">
-            <button type="button" onclick="switchUserType('customer')" id="customerTypeBtn" style="flex:1; padding:1rem; background:var(--green); color:white; border:none; border-radius:0.3rem; cursor:pointer; font-weight:bold;">👤 Khách Hàng</button>
-            <button type="button" onclick="switchUserType('staff')" id="staffTypeBtn" style="flex:1; padding:1rem; background:#ccc; color:#333; border:none; border-radius:0.3rem; cursor:pointer; font-weight:bold;">👨‍💼 Nhân Viên</button>
-        </div>
-        
-        <!-- Login Form -->
         <div id="loginFormContent">
             <span>Email</span>
             <input type="email" class="box" placeholder="nhập email của bạn" id="loginEmail" required>
@@ -95,38 +102,54 @@
             <p>Quên mật khẩu? <a href="#" onclick="alert('Liên hệ Admin để đặt lại mật khẩu'); return false;">Nhấn vào đây</a></p>
             <p id="registerLinkContainer">Chưa có tài khoản? <a href="#" onclick="switchLoginForm('register'); return false;">Tạo tài khoản</a></p>
         </div>
+    </form>
 
-        <!-- Staff Login Info -->
-        <div id="staffLoginInfo" style="display:none; background:#f0f0f0; padding:1rem; border-radius:0.3rem; margin-top:1rem; font-size:1.2rem;">
-            <p style="margin:0.5rem 0;"><strong>Admin:</strong></p>
-            <p style="margin:0.5rem 0;">Email: admin@lib.com</p>
-            <p style="margin:0.5rem 0;">Password: admin123</p>
-            <p style="margin:1rem 0 0.5rem 0;"><strong>Nhân viên:</strong></p>
-            <p style="margin:0.5rem 0;">Email: librarian@lib.com</p>
-            <p style="margin:0.5rem 0;">Password: librarian123</p>
-        </div>
-
-        <!-- Register Form (hidden) -->
-        <div id="registerFormContent" style="display:none;">
+    <!-- Register Form (hidden) -->
+    <form id="registerFormSubmit" onsubmit="handleRegister(event)" style="display:none;">
+        <h3 id="registerFormTitle">Tạo tài khoản</h3>
+        <div id="registerFormContent">
             <span>Họ và tên</span>
-            <input type="text" class="box" placeholder="nhập họ và tên" id="registerName">
+            <input type="text" class="box" placeholder="nhập họ và tên" id="registerName" required>
             <span>Email</span>
-            <input type="email" class="box" placeholder="nhập email" id="registerEmail">
+            <input type="email" class="box" placeholder="nhập email" id="registerEmail" required>
             <span>Mật khẩu</span>
-            <input type="password" class="box" placeholder="nhập mật khẩu" id="registerPassword">
+            <input type="password" class="box" placeholder="nhập mật khẩu" id="registerPassword" required>
             <span>Xác nhận mật khẩu</span>
-            <input type="password" class="box" placeholder="xác nhận mật khẩu" id="registerPasswordConfirm">
-            <span>Chọn Hạng Thẻ</span>
-            <select class="box" id="registerTier" style="cursor:pointer; font-size:1.6rem;">
-                <option value="bronze">🥉 Đồng - Mượn 2 sách, hạn 14 ngày</option>
-                <option value="silver">🥈 Bạc - Mượn 5 sách, hạn 30 ngày</option>
-                <option value="gold">🥇 Vàng - Mượn 10 sách, hạn 60 ngày</option>
-            </select>
+            <input type="password" class="box" placeholder="xác nhận mật khẩu" id="registerPasswordConfirm" required>
             <input type="submit" value="Tạo tài khoản" class="btn">
             <p>Đã có tài khoản? <a href="#" onclick="switchLoginForm('login'); return false;">Đăng nhập</a></p>
         </div>
     </form>
 
+</div>
+
+<!-- Modal Đăng ký thẻ mượn -->
+<div class="login-form-container" id="libraryCardModal" style="display:none;">
+    <div class="fas fa-times" onclick="closeLibraryCardModal()" style="cursor:pointer;"></div>
+    <form id="libraryCardForm" onsubmit="handleLibraryCardRegistration(event)" style="max-width:500px;">
+        <h3 style="text-align:center; margin-bottom:2rem;">❌ Chưa Đăng Ký</h3>
+        
+        <p style="color:#666; text-align:center; margin-bottom:2rem; font-size:1rem;">
+            Vui lòng chọn một gói hạng để bắt đầu bình
+        </p>
+        
+        <div style="padding:2rem; border:3px solid #27ae60; border-radius:0.8rem; background:#f0f9f7; margin-bottom:2rem;">
+            <div style="text-align:center; margin-bottom:1.5rem;">
+                <span style="font-weight:bold; color:#333; font-size:1.1rem;">📖 Gói Tiêu Chuẩn</span>
+            </div>
+            <p style="font-size:0.95rem; color:#333; margin:0.8rem 0; line-height:1.6;">
+                ✓ Mượn không giới hạn<br>
+                ✓ Hạn mượn: 30 ngày<br>
+                ✓ Gia hạn: 2 lần<br>
+            </p>
+            <p style="font-size:1.3rem; color:#e74c3c; font-weight:bold; text-align:center; margin-top:1.5rem;">💰 50,000₫/tháng</p>
+        </div>
+        
+        <input type="hidden" name="libraryCardTier" value="bronze">
+        
+        <input type="submit" value="Đăng Ký" class="btn" style="width:100%; margin-bottom:1rem;">
+        <button type="button" onclick="closeLibraryCardModal()" class="btn" style="width:100%; background:#95a5a6; margin:0;" >Hủy</button>
+    </form>
 </div>
 
 <!-- home section starts  -->
@@ -138,7 +161,10 @@
         <div class="content">
             <h3>Học mọi lúc – Đọc mọi nơi.</h3>
             <p>Trang web thư viện của chúng tôi mang đến hàng ngàn đầu sách, tài liệu học tập và nguồn tham khảo chất lượng, được cập nhật liên tục. Chỉ với vài cú nhấp chuột, bạn có thể truy cập kiến thức ở mọi lĩnh vực – từ khoa học, kinh tế, công nghệ đến kỹ năng mềm và giải trí.</p>
-            <a href="#" class="btn">khám phá ngay</a>
+            <div style="display:flex; gap:1rem; flex-wrap:wrap;">
+                <a href="books.html" class="btn">khám phá ngay</a>
+                <a href="#" onclick="goToMembershipPage(); return false;" class="btn" style="background:#27ae60;">📖 Đăng ký thẻ mượn</a>
+            </div>
         </div>
 
         <div class="swiper books-slider">
@@ -255,7 +281,7 @@
 
 <section class="arrivals" id="arrivals">
 
-    <h1 class="heading"> <span>new arrivals</span> </h1>
+    <h1 class="heading"> <span>Các Loại Sách Mới</span> </h1>
 
     <div class="swiper arrivals-slider">
 
@@ -263,10 +289,10 @@
 
             <a href="#" class="swiper-slide box">
                 <div class="image">
-                    <img src="image/book-1.png" alt="">
+                    <img src="image/book/CộiNguồnCủaHạnhPhúc.png" alt="">
                 </div>
                 <div class="content">
-                    <h3>new arrivals</h3>
+                    <h3>Cội Nguồn Của Hạnh Phúc</h3>
                     <div class="price">$15.99 <span>$20.99</span></div>
                     <div class="stars">
                         <i class="fas fa-star"></i>
@@ -280,10 +306,10 @@
 
             <a href="#" class="swiper-slide box">
                 <div class="image">
-                    <img src="image/book-2.png" alt="">
+                    <img src="image/book/MặcKệHọ.png" alt="">
                 </div>
                 <div class="content">
-                    <h3>new arrivals</h3>
+                    <h3>Mặc Kệ Họ</h3>
                     <div class="price">$15.99 <span>$20.99</span></div>
                     <div class="stars">
                         <i class="fas fa-star"></i>
@@ -297,10 +323,10 @@
 
             <a href="#" class="swiper-slide box">
                 <div class="image">
-                    <img src="image/book-3.png" alt="">
+                    <img src="image/book/NgườiLạVớiChínhTa.png" alt="">
                 </div>
                 <div class="content">
-                    <h3>new arrivals</h3>
+                    <h3>Người Lạ Với Chính Ta</h3>
                     <div class="price">$15.99 <span>$20.99</span></div>
                     <div class="stars">
                         <i class="fas fa-star"></i>
@@ -314,10 +340,10 @@
 
             <a href="#" class="swiper-slide box">
                 <div class="image">
-                    <img src="image/book-4.png" alt="">
+                    <img src="image/book/NhẹNhàngMàSống.png" alt="">
                 </div>
                 <div class="content">
-                    <h3>new arrivals</h3>
+                    <h3>Nhẹ Nhàng Mà Sống</h3>
                     <div class="price">$15.99 <span>$20.99</span></div>
                     <div class="stars">
                         <i class="fas fa-star"></i>
@@ -331,10 +357,10 @@
 
             <a href="#" class="swiper-slide box">
                 <div class="image">
-                    <img src="image/book-5.png" alt="">
+                    <img src="image/book/NơiVếtThươngAnhSángRọiVào.png" alt="">
                 </div>
                 <div class="content">
-                    <h3>new arrivals</h3>
+                    <h3>Nơi Vết Thương Anh Sáng Rọi Vào</h3>
                     <div class="price">$15.99 <span>$20.99</span></div>
                     <div class="stars">
                         <i class="fas fa-star"></i>
@@ -356,10 +382,10 @@
 
             <a href="#" class="swiper-slide box">
                 <div class="image">
-                    <img src="image/book-6.png" alt="">
+                    <img src="image/book/ConĐườngChínhTrực.png" alt="">
                 </div>
                 <div class="content">
-                    <h3>new arrivals</h3>
+                    <h3>Con Đường Chính Trực</h3>
                     <div class="price">$15.99 <span>$20.99</span></div>
                     <div class="stars">
                         <i class="fas fa-star"></i>
@@ -373,10 +399,10 @@
 
             <a href="#" class="swiper-slide box">
                 <div class="image">
-                    <img src="image/book-7.png" alt="">
+                    <img src="image/book/ĐườngVàoThiền.png" alt="">
                 </div>
                 <div class="content">
-                    <h3>new arrivals</h3>
+                    <h3>Đường Vào Thiền</h3>
                     <div class="price">$15.99 <span>$20.99</span></div>
                     <div class="stars">
                         <i class="fas fa-star"></i>
@@ -390,10 +416,10 @@
 
             <a href="#" class="swiper-slide box">
                 <div class="image">
-                    <img src="image/book-8.png" alt="">
+                    <img src="image/book/PháVỡKhuônMẫu.png" alt="">
                 </div>
                 <div class="content">
-                    <h3>new arrivals</h3>
+                    <h3>Phá Vỡ Khuôn Mẫu</h3>
                     <div class="price">$15.99 <span>$20.99</span></div>
                     <div class="stars">
                         <i class="fas fa-star"></i>
@@ -407,10 +433,10 @@
 
             <a href="#" class="swiper-slide box">
                 <div class="image">
-                    <img src="image/book-9.png" alt="">
+                    <img src="image/book/KhaiMởCảmXúc.png" alt="">
                 </div>
                 <div class="content">
-                    <h3>new arrivals</h3>
+                    <h3>Khai Mở Cảm Xúc</h3>
                     <div class="price">$15.99 <span>$20.99</span></div>
                     <div class="stars">
                         <i class="fas fa-star"></i>
@@ -424,10 +450,10 @@
 
             <a href="#" class="swiper-slide box">
                 <div class="image">
-                    <img src="image/book-10.png" alt="">
+                    <img src="image/book/HạnhPhúcTuổiTrẻ.png" alt="">
                 </div>
                 <div class="content">
-                    <h3>new arrivals</h3>
+                    <h3>Hạnh Phúc Tuổi Trẻ</h3>
                     <div class="price">$15.99 <span>$20.99</span></div>
                     <div class="stars">
                         <i class="fas fa-star"></i>
@@ -470,7 +496,7 @@
 
 <section class="reviews" id="reviews">
 
-    <h1 class="heading"> <span>client's reviews</span> </h1>
+    <h1 class="heading"> <span>Các Bài Đánh Giá</span> </h1>
 
     <div class="swiper reviews-slider">
 
@@ -479,7 +505,7 @@
             <div class="swiper-slide box">
                 <img src="image/pic-1.png" alt="">
                 <h3>john</h3>
-                <p>The website is very good and responsive, all the books available in this website are original and very cheap, you can buy them comfortably. Payment can also be done easily.</p>
+                <p>Website rất tốt và phản hồi nhanh, tất cả các cuốn sách có trên trang web này đều là bản gốc và rất rẻ, bạn có thể mua chúng một cách thoải mái. Thanh toán cũng có thể được thực hiện dễ dàng.</p>
                 <div class="stars">
                     <i class="fas fa-star"></i>
                     <i class="fas fa-star"></i>
@@ -492,7 +518,7 @@
             <div class="swiper-slide box">
                 <img src="image/pic-2.png" alt="">
                 <h3>Juliyana</h3>
-                <p>The website is very good and responsive, all the books available in this website are original and very cheap, you can buy them comfortably. Payment can also be done easily.</p>
+                <p>Website rất tốt và phản hồi nhanh, tất cả các cuốn sách có trên trang web này đều là bản gốc và rất rẻ, bạn có thể mua chúng một cách thoải mái. Thanh toán cũng có thể được thực hiện dễ dàng.</p>
                 <div class="stars">
                     <i class="fas fa-star"></i>
                     <i class="fas fa-star"></i>
@@ -505,7 +531,7 @@
             <div class="swiper-slide box">
                 <img src="image/pic-3.png" alt="">
                 <h3>Joy</h3>
-                <p>The website is very good and responsive, all the books available in this website are original and very cheap, you can buy them comfortably. Payment can also be done easily.</p>
+                <p>Website rất tốt và phản hồi nhanh, tất cả các cuốn sách có trên trang web này đều là bản gốc và rất rẻ, bạn có thể mua chúng một cách thoải mái. Thanh toán cũng có thể được thực hiện dễ dàng.</p>
                 <div class="stars">
                     <i class="fas fa-star"></i>
                     <i class="fas fa-star"></i>
@@ -517,7 +543,7 @@
             <div class="swiper-slide box">
                 <img src="image/pic-4.png" alt="">
                 <h3>Oliveya</h3>
-                <p>The website is very good and responsive, all the books available in this website are original and very cheap, you can buy them comfortably. Payment can also be done easily.</p>
+                <p>Website rất tốt và phản hồi nhanh, tất cả các cuốn sách có trên trang web này đều là bản gốc và rất rẻ, bạn có thể mua chúng một cách thoải mái. Thanh toán cũng có thể được thực hiện dễ dàng.</p>
                 <div class="stars">
                     <i class="fas fa-star"></i>
                     <i class="fas fa-star"></i>
@@ -530,7 +556,7 @@
             <div class="swiper-slide box">
                 <img src="image/pic-5.png" alt="">
                 <h3>William</h3>
-                <p>The website is very good and responsive, all the books available in this website are original and very cheap, you can buy them comfortably. Payment can also be done easily.</p>
+                <p>Website rất tốt và phản hồi nhanh, tất cả các cuốn sách có trên trang web này đều là bản gốc và rất rẻ, bạn có thể mua chúng một cách thoải mái. Thanh toán cũng có thể được thực hiện dễ dàng.</p>
                 <div class="stars">
                     <i class="fas fa-star"></i>
                     <i class="fas fa-star"></i>
@@ -543,7 +569,7 @@
             <div class="swiper-slide box">
                 <img src="image/pic-6.png" alt="">
                 <h3>Ava</h3>
-                <p>The website is very good and responsive, all the books available in this website are original and very cheap, you can buy them comfortably. Payment can also be done easily.</p>
+                <p>Website rất tốt và phản hồi nhanh, tất cả các cuốn sách có trên trang web này đều là bản gốc và rất rẻ, bạn có thể mua chúng một cách thoải mái. Thanh toán cũng có thể được thực hiện dễ dàng.</p>
                 <div class="stars">
                     <i class="fas fa-star"></i>
                     <i class="fas fa-star"></i>

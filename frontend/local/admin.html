@@ -20,26 +20,32 @@
             </a>
 
             <div class="menu-group-label">Thư viện</div>
-            <a href="#" class="menu-item" onclick="switchTab('books', this)">
+            <a href="#" class="menu-item" id="menuBooks" onclick="switchTab('books', this)">
                 <i class="fas fa-layer-group"></i> QL Kho sách
             </a>
-            <a href="#" class="menu-item" onclick="switchTab('loans', this)">
+            <a href="#" class="menu-item" id="menuLoans" onclick="switchTab('loans', this)">
                 <i class="fas fa-clipboard-list"></i> QL Mượn / Trả
             </a>
-            <a href="#" class="menu-item" onclick="switchTab('readers', this)">
+            <a href="#" class="menu-item" id="menuReaders" onclick="switchTab('readers', this)">
                 <i class="fas fa-user-graduate"></i> QL Độc giả
             </a>
-            <a href="#" class="menu-item" onclick="switchTab('stats', this)">
+            <a href="#" class="menu-item" id="menuStats" onclick="switchTab('stats', this)">
                 <i class="fas fa-chart-pie"></i> Thống kê
             </a>
 
-            <div class="menu-group-label">Nhân sự</div>
-            <a href="#" class="menu-item" onclick="switchTab('employees', this)">
+            <div class="menu-group-label" id="staffMenuLabel" style="display:none;">Nhân sự</div>
+            <a href="#" class="menu-item" id="menuEmployees" style="display:none;" onclick="switchTab('employees', this)">
                 <i class="fas fa-id-card-alt"></i> QL Nhân viên
+            </a>
+            <a href="#" class="menu-item" id="menuAttendance" style="display:none;" onclick="switchTab('attendance', this)">
+                <i class="fas fa-clipboard-check"></i> QL Chấm công
+            </a>
+            <a href="#" class="menu-item" id="menuShifts" style="display:none;" onclick="switchTab('shifts', this)">
+                <i class="fas fa-calendar-alt"></i> QL Ca làm
             </a>
             
             <div class="logout-section">
-                <a href="index.html" class="menu-item logout-btn">
+                <a href="index.html" onclick="logout()" class="menu-item logout-btn">
                     <i class="fas fa-sign-out-alt"></i> Đăng xuất
                 </a>
             </div>
@@ -149,6 +155,36 @@
             </div>
         </div>
 
+        <div id="attendance" class="section-content">
+            <div class="table-container">
+                <div class="table-header">
+                    <h3><i class="fas fa-clipboard-check"></i> Quản Lý Chấm Công</h3>
+                    <button class="btn-add" onclick="openModal('attendanceModal')"><i class="fas fa-plus"></i> Thêm chấm công</button>
+                </div>
+                <div class="table-responsive">
+                    <table id="attendanceTable">
+                        <thead><tr><th>Mã NV</th><th>Họ tên</th><th>Ngày</th><th>Giờ vào</th><th>Giờ ra</th><th>Thao tác</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="shifts" class="section-content">
+            <div class="table-container">
+                <div class="table-header">
+                    <h3><i class="fas fa-calendar-alt"></i> Quản Lý Ca Làm</h3>
+                    <button class="btn-add" onclick="openModal('shiftModal')"><i class="fas fa-plus"></i> Thêm ca làm</button>
+                </div>
+                <div class="table-responsive">
+                    <table id="shiftTable">
+                        <thead><tr><th>Mã Ca</th><th>Tên Ca</th><th>Giờ Bắt Đầu</th><th>Giờ Kết Thúc</th><th>Thao tác</th></tr></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
     </div>
 </div>
 
@@ -212,6 +248,31 @@
                     <option value="Sáng">Sáng</option><option value="Chiều">Chiều</option><option value="Full-time">Full-time</option>
                 </select>
             </div>
+            <div class="form-actions"><button type="submit" class="btn-save">Lưu lại</button></div>
+        </form>
+    </div>
+</div>
+
+<div class="modal" id="attendanceModal">
+    <div class="modal-content">
+        <div class="modal-header"><h3>Thêm Chấm Công</h3><span class="close-btn" onclick="closeModal('attendanceModal')">&times;</span></div>
+        <form onsubmit="handleFormSubmit(event, 'attendance')">
+            <div class="form-group"><label>Mã NV / Họ tên</label><input type="text" id="attEmp" required placeholder="Nhập mã NV hoặc tên..."></div>
+            <div class="form-group"><label>Ngày</label><input type="date" id="attDate" required></div>
+            <div class="form-group"><label>Giờ vào</label><input type="time" id="attTimeIn" required></div>
+            <div class="form-group"><label>Giờ ra</label><input type="time" id="attTimeOut" required></div>
+            <div class="form-actions"><button type="submit" class="btn-save">Lưu lại</button></div>
+        </form>
+    </div>
+</div>
+
+<div class="modal" id="shiftModal">
+    <div class="modal-content">
+        <div class="modal-header"><h3>Thêm Ca Làm</h3><span class="close-btn" onclick="closeModal('shiftModal')">&times;</span></div>
+        <form onsubmit="handleFormSubmit(event, 'shift')">
+            <div class="form-group"><label>Tên ca</label><input type="text" id="shiftName" required placeholder="VD: Sáng, Chiều, Tối..."></div>
+            <div class="form-group"><label>Giờ bắt đầu</label><input type="time" id="shiftStart" required></div>
+            <div class="form-group"><label>Giờ kết thúc</label><input type="time" id="shiftEnd" required></div>
             <div class="form-actions"><button type="submit" class="btn-save">Lưu lại</button></div>
         </form>
     </div>

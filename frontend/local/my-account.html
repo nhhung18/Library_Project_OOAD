@@ -176,8 +176,8 @@
         <nav class="navbar">
             <a href="index.html">Trang chủ</a>
             <a href="books.html">Sách</a>
-            <a href="index.html#arrivals">Tin tức</a>
             <a href="index.html#reviews">Đánh giá</a>
+            <a href="#blogs">Về chúng tôi</a>
         </nav>
     </div>
 </header>
@@ -200,7 +200,7 @@
                 <i class="fas fa-history"></i> Lịch Sử
             </a>
             <a class="menu-item" onclick="switchSection('membership', this)">
-                <i class="fas fa-crown"></i> Hạng Thẻ
+                <i class="fas fa-id-card"></i> Đăng Ký Thẻ
             </a>
             <a class="menu-item" onclick="switchSection('favorites', this)">
                 <i class="fas fa-heart"></i> Yêu Thích
@@ -267,33 +267,30 @@
 
             <!-- Membership Tier Section -->
             <div id="membership" class="section">
-                <h2>Hạng Thẻ Thành Viên</h2>
+                <h2>Đăng Ký Thẻ Mượn</h2>
                 <div id="membershipTierCard" style="background:#f9f9f9; padding:2rem; border-radius:0.5rem; margin-bottom:2rem;">
                     <div style="text-align:center; margin-bottom:2rem;">
                         <h3 id="currentTierName" style="color:var(--green); font-size:2rem; margin:0;">Đang Tải...</h3>
-                        <p id="currentTierBenefit" style="color:#666; margin:0.5rem 0;"></p>
                     </div>
-                    <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:1.5rem; margin-bottom:2rem;">
-                        <div style="background:white; padding:1.5rem; border-radius:0.3rem; border:2px solid #bdc3c7; text-align:center;" id="tierBronzeCard">
-                            <h4 style="color:#a67c52; margin:0 0 1rem 0;">🥉 Đồng</h4>
-                            <p style="margin:0.5rem 0; font-size:0.9rem;"><strong>Mượn:</strong> 2 sách</p>
-                            <p style="margin:0.5rem 0; font-size:0.9rem;"><strong>Hạn:</strong> 14 ngày</p>
-                            <p style="margin:0.5rem 0; font-size:0.9rem;"><strong>Gia hạn:</strong> 0 lần</p>
-                            <button onclick="changeTier('bronze')" style="margin-top:1rem; padding:0.7rem 1.5rem; background:#a67c52; color:white; border:none; border-radius:0.3rem; cursor:pointer;" id="tierBronzeBtn">Chọn</button>
+                    <div style="background:white; padding:2rem; border-radius:0.5rem; border:2px solid #27ae60; text-align:center; max-width:500px; margin:0 auto;">
+                        <h4 style="color:#333; margin:0 0 1rem 0; font-size:1.3rem;">📖 Gói Tiêu Chuẩn</h4>
+                        <div style="background:#f5f5f5; padding:1.5rem; border-radius:0.3rem; margin-bottom:1rem;">
+                            <p style="margin:0.7rem 0; font-size:0.95rem;">✓ Mươn không giới hạn</p>
+                            <p style="margin:0.7rem 0; font-size:0.95rem;">✓ Hạn mượn: 30 ngày</p>
+                            <p style="margin:0.7rem 0; font-size:0.95rem;">✓ Gia hạn: 2 lần</p>
                         </div>
-                        <div style="background:white; padding:1.5rem; border-radius:0.3rem; border:2px solid #c0c0c0; text-align:center;" id="tierSilverCard">
-                            <h4 style="color:#c0c0c0; margin:0 0 1rem 0;">🥈 Bạc</h4>
-                            <p style="margin:0.5rem 0; font-size:0.9rem;"><strong>Mượn:</strong> 5 sách</p>
-                            <p style="margin:0.5rem 0; font-size:0.9rem;"><strong>Hạn:</strong> 30 ngày</p>
-                            <p style="margin:0.5rem 0; font-size:0.9rem;"><strong>Gia hạn:</strong> 2 lần/tháng</p>
-                            <button onclick="changeTier('silver')" style="margin-top:1rem; padding:0.7rem 1.5rem; background:#c0c0c0; color:white; border:none; border-radius:0.3rem; cursor:pointer;" id="tierSilverBtn">Chọn</button>
+                        <div style="background:#fff3e0; padding:1rem; border-radius:0.3rem; margin-bottom:1.5rem;">
+                            <p style="margin:0; font-size:1.3rem; color:#e74c3c; font-weight:bold;">💰 50,000₫/tháng</p>
                         </div>
-                        <div style="background:white; padding:1.5rem; border-radius:0.3rem; border:2px solid #ffd700; text-align:center;" id="tierGoldCard">
-                            <h4 style="color:#ffd700; margin:0 0 1rem 0;">🥇 Vàng</h4>
-                            <p style="margin:0.5rem 0; font-size:0.9rem;"><strong>Mượn:</strong> 10 sách</p>
-                            <p style="margin:0.5rem 0; font-size:0.9rem;"><strong>Hạn:</strong> 60 ngày</p>
-                            <p style="margin:0.5rem 0; font-size:0.9rem;"><strong>Gia hạn:</strong> Không giới hạn</p>
-                            <button onclick="changeTier('gold')" style="margin-top:1rem; padding:0.7rem 1.5rem; background:#ffd700; color:#333; border:none; border-radius:0.3rem; cursor:pointer;" id="tierGoldBtn">Chọn</button>
+                        <button onclick="registerTier('bronze')" style="width:100%; padding:0.8rem 1.5rem; background:#27ae60; color:white; border:none; border-radius:0.3rem; cursor:pointer; font-size:1rem; font-weight:bold; transition:all 0.2s;" id="tierBronzeBtn">Đăng Ký</button>
+                    </div>
+                    <div id="currentMembershipInfo" style="background:white; padding:1.5rem; border-radius:0.5rem; border-left:4px solid var(--green); display:none; margin-top:2rem;">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <div>
+                                <p style="margin:0; color:#666;">Bạn hiện đang sử dụng:</p>
+                                <p id="currentMembershipText" style="margin:0.5rem 0 0 0; font-size:1.2rem; font-weight:bold; color:var(--green);"></p>
+                            </div>
+                            <button id="cancelTierBtn" onclick="cancelTier()" style="padding:0.7rem 1.5rem; background:#e74c3c; color:white; border:none; border-radius:0.3rem; cursor:pointer; font-weight:bold; display:none;">❌ Huỷ Gói</button>
                         </div>
                     </div>
                 </div>
@@ -359,6 +356,16 @@ document.addEventListener('DOMContentLoaded', function() {
     loadProfile();
     loadBorrowingList();
     loadFavorites();
+    
+    // Kiểm tra URL parameter để load section cụ thể
+    const params = new URLSearchParams(window.location.search);
+    const section = params.get('section');
+    if (section) {
+        const menuItem = document.querySelector(`.menu-item[onclick="switchSection('${section}', this)"]`);
+        if (menuItem) {
+            menuItem.click();
+        }
+    }
 });
 
 function loadProfile() {
@@ -371,13 +378,11 @@ function loadProfile() {
         'admin': 'Admin'
     };
     
-    const tierEmojis = { bronze: '🥉', silver: '🥈', gold: '🥇' };
-    const tierNames = { bronze: 'Đồng', silver: 'Bạc', gold: 'Vàng' };
-    const tier = currentUser.membershipTier || 'bronze';
-    
     const borrowHistory = JSON.parse(localStorage.getItem('cart')) || [];
     const totalBorrowed = borrowHistory.length;
     const currentlyBorrowing = borrowHistory.filter(b => b.status !== 'returned').length;
+    
+    const tierStatus = currentUser.status === 'user' ? '✓ Đã Đăng Ký' : '❌ Chưa Đăng Ký';
     
     document.getElementById('profileCard').innerHTML = `
         <div class="profile-info">
@@ -394,8 +399,8 @@ function loadProfile() {
                 <value>${rankMap[currentUser.role] || 'Khách hàng'}</value>
             </div>
             <div class="info-item">
-                <label>Hạng Thẻ</label>
-                <value style="color: ${tier === 'gold' ? '#ffd700' : tier === 'silver' ? '#c0c0c0' : '#a67c52'};">${tierEmojis[tier]} Hạng ${tierNames[tier]}</value>
+                <label>Trạng Thái Thẻ Mượn</label>
+                <value style="color: ${currentUser.status === 'user' ? '#27ae60' : '#e74c3c'};">${tierStatus}</value>
             </div>
             <div class="info-item">
                 <label>Tổng Sách Đã Mượn</label>
@@ -541,77 +546,83 @@ function switchSection(sectionId, element) {
 
 function loadMembershipTier() {
     const currentUser = JSON.parse(localStorage.getItem('currentUser'));
-    const tier = currentUser.membershipTier || 'bronze';
+    const tier = currentUser.membershipTier;
     
-    const tierEmojis = { bronze: '🥉', silver: '🥈', gold: '🥇' };
-    const tierNames = { bronze: 'Đồng', silver: 'Bạc', gold: 'Vàng' };
+    // Nếu không có tier, ẩn heading
+    if (!tier) {
+        document.getElementById('currentTierName').innerHTML = '❌ Chưa Đăng Ký';
+    } else {
+        document.getElementById('currentTierName').innerHTML = '✓ Đã Đăng Ký';
+    }
     
-    document.getElementById('currentTierName').innerHTML = `${tierEmojis[tier]} Hạng ${tierNames[tier]}`;
+    // Show current membership info
+    const membershipInfo = document.getElementById('currentMembershipInfo');
+    const membershipText = document.getElementById('currentMembershipText');
+    const cancelBtn = document.getElementById('cancelTierBtn');
+    const registerBtn = document.getElementById('tierBronzeBtn');
     
-    // Get tier config from script.js (need to access from parent window)
-    const tierConfig = {
-        bronze: {
-            name: 'Đồng',
-            maxBooks: 2,
-            dueDays: 14,
-            maxExtends: 0,
-            benefits: 'Mượn tối đa 2 sách, hạn 14 ngày'
-        },
-        silver: {
-            name: 'Bạc',
-            maxBooks: 5,
-            dueDays: 30,
-            maxExtends: 2,
-            benefits: 'Mượn tối đa 5 sách, hạn 30 ngày, gia hạn 2 lần/tháng'
-        },
-        gold: {
-            name: 'Vàng',
-            maxBooks: 10,
-            dueDays: 60,
-            maxExtends: 999,
-            benefits: 'Mượn tối đa 10 sách, hạn 60 ngày, gia hạn không giới hạn'
-        }
-    };
-    
-    document.getElementById('currentTierBenefit').innerHTML = tierConfig[tier].benefits;
-    
-    // Highlight current tier card
-    ['bronze', 'silver', 'gold'].forEach(t => {
-        const card = document.getElementById(`tier${t.charAt(0).toUpperCase() + t.slice(1)}Card`);
-        const btn = document.getElementById(`tier${t.charAt(0).toUpperCase() + t.slice(1)}Btn`);
-        if (t === tier) {
-            card.style.borderWidth = '3px';
-            card.style.background = '#e8f5e9';
-            btn.textContent = '✓ Đang Dùng';
-            btn.disabled = true;
-        } else {
-            card.style.borderWidth = '2px';
-            card.style.background = 'white';
-            btn.textContent = 'Chọn';
-            btn.disabled = false;
-        }
-    });
+    if (tier) {
+        membershipInfo.style.display = 'block';
+        membershipText.textContent = '📖 Gói Tiêu Chuẩn - 50,000₫/tháng';
+        cancelBtn.style.display = 'inline-block';
+        registerBtn.textContent = '✓ Đang Dùng';
+        registerBtn.disabled = true;
+        registerBtn.style.opacity = '0.7';
+    } else {
+        membershipInfo.style.display = 'none';
+        cancelBtn.style.display = 'none';
+        registerBtn.textContent = 'Đăng Ký';
+        registerBtn.disabled = false;
+        registerBtn.style.opacity = '1';
+    }
 }
 
-function changeTier(newTier) {
+function registerTier(newTier) {
     const currentUser = JSON.parse(localStorage.getItem('currentUser'));
     const users = JSON.parse(localStorage.getItem('users'));
     
-    currentUser.membershipTier = newTier;
-    
-    // Update in users array
-    const userIdx = users.findIndex(u => u.email === currentUser.email);
-    if (userIdx !== -1) {
-        users[userIdx].membershipTier = newTier;
+    if (confirm('Bạn có muốn đăng ký gói Tiêu Chuẩn (50,000₫/tháng)?')) {
+        currentUser.membershipTier = 'bronze';
+        currentUser.status = 'user';
+        
+        // Update in users array
+        const userIdx = users.findIndex(u => u.email === currentUser.email);
+        if (userIdx !== -1) {
+            users[userIdx].membershipTier = 'bronze';
+            users[userIdx].status = 'user';
+        }
+        
+        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+        localStorage.setItem('users', JSON.stringify(users));
+        
+        alert('✓ Đăng ký thành công! Bạn đã có thể mượn sách rồi!');
+        
+        loadMembershipTier();
     }
+}
+
+function cancelTier() {
+    const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+    const users = JSON.parse(localStorage.getItem('users'));
     
-    localStorage.setItem('currentUser', JSON.stringify(currentUser));
-    localStorage.setItem('users', JSON.stringify(users));
-    
-    const tierNames = { bronze: 'Đồng', silver: 'Bạc', gold: 'Vàng' };
-    alert(`✓ Nâng cấp thành công! Bạn đã chọn hạng ${tierNames[newTier]}`);
-    
-    loadMembershipTier();
+    if (confirm('Bạn chắc chắn muốn huỷ gói hạng? Bạn sẽ không thể mượn sách nữa.')) {
+        currentUser.membershipTier = null;
+        currentUser.status = 'guest';  // Quay lại guest
+        
+        // Update in users array
+        const userIdx = users.findIndex(u => u.email === currentUser.email);
+        if (userIdx !== -1) {
+            users[userIdx].membershipTier = null;
+            users[userIdx].status = 'guest';
+        }
+        
+        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+        localStorage.setItem('users', JSON.stringify(users));
+        
+        alert('✓ Huỷ gói hạng thành công!');
+        
+        loadMembershipTier();
+    }
 }
 
 function logout() {

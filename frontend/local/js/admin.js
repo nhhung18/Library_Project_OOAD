@@ -1,6 +1,50 @@
-/* js/admin.js - Full Interactive Version */
+/* js/admin.js - Full Interactive Version with Role-Based Access */
 
-// --- 1. DỮ LIỆU KHỞI TẠO ---
+// --- 1. PHÂN QUYỀN & KIỂM TRA ĐĂNG NHẬP ---
+function checkAuthAndPermissions() {
+  const currentUser = JSON.parse(localStorage.getItem('currentUser'));
+  
+  if (!currentUser || !['admin', 'librarian'].includes(currentUser.role)) {
+    alert('Bạn không có quyền truy cập trang này!');
+    window.location.href = 'index.html';
+    return null;
+  }
+  
+  const isAdmin = currentUser.role === 'admin';
+  
+  // Hiển thị thông tin user
+  document.querySelector('.profile-info .name').textContent = currentUser.name;
+  document.querySelector('.profile-info .role').textContent = isAdmin ? 'Quản lý' : 'Thủ thư';
+  
+  // Ẩn/hiện menu dựa trên role
+  const staffMenuLabel = document.getElementById('staffMenuLabel');
+  const menuEmployees = document.getElementById('menuEmployees');
+  const menuAttendance = document.getElementById('menuAttendance');
+  const menuShifts = document.getElementById('menuShifts');
+  
+  if (isAdmin) {
+    // Admin: hiển thị tất cả
+    if (staffMenuLabel) staffMenuLabel.style.display = 'block';
+    if (menuEmployees) menuEmployees.style.display = 'block';
+    if (menuAttendance) menuAttendance.style.display = 'block';
+    if (menuShifts) menuShifts.style.display = 'block';
+  } else {
+    // Librarian: ẩn menu nhân sự
+    if (staffMenuLabel) staffMenuLabel.style.display = 'none';
+    if (menuEmployees) menuEmployees.style.display = 'none';
+    if (menuAttendance) menuAttendance.style.display = 'none';
+    if (menuShifts) menuShifts.style.display = 'none';
+  }
+  
+  return currentUser;
+}
+
+function logout() {
+  localStorage.removeItem('currentUser');
+  window.location.href = 'index.html';
+}
+
+// --- 2. DỮ LIỆU KHỞI TẠO ---
 let booksData = [
     { id: 1, name: "Đắc Nhân Tâm", author: "Dale Carnegie", category: "Kỹ năng", qty: 15 },
     { id: 2, name: "Nhà Giả Kim", author: "Paulo Coelho", category: "Văn học", qty: 8 },
@@ -23,10 +67,24 @@ let employeesData = [
     { id: "NV02", name: "Lê Văn C", role: "Thủ thư", shift: "Sáng", status: "Đang làm" },
 ];
 
-// --- 2. KHỞI TẠO VÀ RENDER ---
+let attendanceData = [
+    { id: "ATT001", emp: "NV01", empName: "Admin User", date: "2025-12-01", timeIn: "08:00", timeOut: "17:00" },
+    { id: "ATT002", emp: "NV02", empName: "Lê Văn C", date: "2025-12-01", timeIn: "08:00", timeOut: "12:00" },
+];
+
+let shiftsData = [
+    { id: "CA01", name: "Sáng", start: "08:00", end: "12:00" },
+    { id: "CA02", name: "Chiều", start: "13:00", end: "17:00" },
+    { id: "CA03", name: "Tối", start: "18:00", end: "22:00" },
+];
+
+// --- 3. KHỞI TẠO VÀ RENDER ---
 document.addEventListener('DOMContentLoaded', () => {
-    updateDashboardStats(); // Cập nhật số liệu thống kê
-    renderAllTables();      // Vẽ tất cả các bảng
+    const user = checkAuthAndPermissions();
+    if (!user) return;
+    
+    updateDashboardStats();
+    renderAllTables();
 });
 
 function renderAllTables() {
@@ -34,6 +92,8 @@ function renderAllTables() {
     renderLoanTable();
     renderReaderTable();
     renderEmployeeTable();
+    renderAttendanceTable();
+    renderShiftTable();
 }
 
 function updateDashboardStats() {
@@ -130,6 +190,43 @@ function renderEmployeeTable() {
     });
 }
 
+function renderAttendanceTable() {
+    const tbody = document.querySelector('#attendanceTable tbody');
+    if (!tbody) return;
+    tbody.innerHTML = "";
+    attendanceData.forEach(item => {
+        tbody.innerHTML += `
+            <tr>
+                <td>${item.emp}</td>
+                <td>${item.empName}</td>
+                <td>${item.date}</td>
+                <td>${item.timeIn}</td>
+                <td>${item.timeOut}</td>
+                <td class="action-icons">
+                    <button class="action-btn delete" onclick="deleteItem('attendance', '${item.id}')"><i class="fas fa-trash"></i></button>
+                </td>
+            </tr>`;
+    });
+}
+
+function renderShiftTable() {
+    const tbody = document.querySelector('#shiftTable tbody');
+    if (!tbody) return;
+    tbody.innerHTML = "";
+    shiftsData.forEach(item => {
+        tbody.innerHTML += `
+            <tr>
+                <td>${item.id}</td>
+                <td>${item.name}</td>
+                <td>${item.start}</td>
+                <td>${item.end}</td>
+                <td class="action-icons">
+                    <button class="action-btn delete" onclick="deleteItem('shift', '${item.id}')"><i class="fas fa-trash"></i></button>
+                </td>
+            </tr>`;
+    });
+}
+
 // --- 4. XỬ LÝ FORM SUBMIT (THÊM MỚI) ---
 function handleFormSubmit(event, type) {
     event.preventDefault(); // Chặn load lại trang
@@ -178,6 +275,28 @@ function handleFormSubmit(event, type) {
         employeesData.push(newEmp);
         closeModal('employeeModal');
     }
+    else if (type === 'attendance') {
+        const newAtt = {
+            id: "ATT" + (attendanceData.length + 1).toString().padStart(3, '0'),
+            emp: document.getElementById('attEmp').value,
+            empName: document.getElementById('attEmp').value,
+            date: document.getElementById('attDate').value,
+            timeIn: document.getElementById('attTimeIn').value,
+            timeOut: document.getElementById('attTimeOut').value
+        };
+        attendanceData.push(newAtt);
+        closeModal('attendanceModal');
+    }
+    else if (type === 'shift') {
+        const newShift = {
+            id: "CA" + (shiftsData.length + 1).toString().padStart(2, '0'),
+            name: document.getElementById('shiftName').value,
+            start: document.getElementById('shiftStart').value,
+            end: document.getElementById('shiftEnd').value
+        };
+        shiftsData.push(newShift);
+        closeModal('shiftModal');
+    }
 
     // Reset form và vẽ lại bảng
     event.target.reset();
@@ -195,6 +314,8 @@ function deleteItem(type, id) {
     if (type === 'loan') loansData = loansData.filter(x => x.id !== id);
     if (type === 'reader') readersData = readersData.filter(x => x.id !== id);
     if (type === 'employee') employeesData = employeesData.filter(x => x.id !== id);
+    if (type === 'attendance') attendanceData = attendanceData.filter(x => x.id !== id);
+    if (type === 'shift') shiftsData = shiftsData.filter(x => x.id !== id);
 
     renderAllTables();
     updateDashboardStats();
