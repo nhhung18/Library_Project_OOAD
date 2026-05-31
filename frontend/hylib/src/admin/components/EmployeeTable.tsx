@@ -29,18 +29,28 @@ export default function EmployeeTable({
   const fetchLibrarians = async () => {
     try {
       const response = await userApi.getLibrarians();
-      setEmployees(response.data);
+      if (Array.isArray(response)) {
+        setEmployees(response);
+      } else {
+        setEmployees([]);
+      }
     } catch (error) {
       console.error("Error fetching librarians:", error);
     }
   };
 
-  const toggleStatus = async (id: number, currentStatus: UserStatus) => {
+  const toggleStatus = async (id: number, newStatus: UserStatus) => {
     try {
-      const newStatus = currentStatus === UserStatus.ACTIVE ? UserStatus.INACTIVE : UserStatus.ACTIVE;
       const userToUpdate = employees.find(u => u.id === id);
       if (userToUpdate) {
-        await userApi.updateUser(id, { ...userToUpdate, userStatus: newStatus });
+        await userApi.updateUser(id, {
+          fullName: userToUpdate.fullName,
+          email: userToUpdate.email,
+          phoneNum: userToUpdate.phoneNum,
+          avatarUrl: userToUpdate.avatarUrl,
+          role: userToUpdate.role,
+          userStatus: newStatus
+        });
         fetchLibrarians();
       }
     } catch (error) {
@@ -146,8 +156,21 @@ export default function EmployeeTable({
                     <div className="relative inline-block">
                       <select
                         value={user.role}
-                        onChange={(e) => {
-                           // If you want inline role editing, hook up userApi here
+                        onChange={async (e) => {
+                          const newRole = e.target.value as RoleName;
+                          try {
+                            await userApi.updateUser(user.id, {
+                              fullName: user.fullName,
+                              email: user.email,
+                              phoneNum: user.phoneNum,
+                              avatarUrl: user.avatarUrl,
+                              role: newRole,
+                              userStatus: user.userStatus
+                            });
+                            fetchLibrarians();
+                          } catch (error) {
+                            console.error("Error updating role:", error);
+                          }
                         }}
                         className={`appearance-none outline-none cursor-pointer text-xs font-bold rounded-full px-3 py-1.5 pr-8 border transition-colors ${getAccountTypeStyle(user.role)}`}
                       >
@@ -163,7 +186,7 @@ export default function EmployeeTable({
                     <div className="relative inline-block">
                       <select
                         value={user.userStatus}
-                        onChange={(e) => toggleStatus(user.id, user.userStatus)}
+                        onChange={(e) => toggleStatus(user.id, e.target.value as UserStatus)}
                         className={`appearance-none outline-none cursor-pointer text-xs font-bold rounded-full px-3 py-1.5 pr-8 border transition-colors ${
                           user.userStatus === UserStatus.ACTIVE 
                             ? 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100' 

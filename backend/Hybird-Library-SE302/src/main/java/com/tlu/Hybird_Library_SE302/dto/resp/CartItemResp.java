@@ -10,4 +10,5 @@ public class CartItemResp {
     private Integer cartId;
     private Integer bookId;
     private BookType bookType;
+    private BookResp book;
 }

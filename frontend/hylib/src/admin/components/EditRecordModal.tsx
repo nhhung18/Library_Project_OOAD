@@ -56,6 +56,7 @@ export default function EditRecordModal({ isOpen, onClose, record, type, onSave 
       });
     } else {
       onSave(record.id, {
+        ...record,
         fineAmount,
         isLost
       });

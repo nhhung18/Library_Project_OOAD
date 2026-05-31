@@ -1,6 +1,7 @@
 package com.tlu.Hybird_Library_SE302.service.core.impl;
 import com.tlu.Hybird_Library_SE302.dto.req.*;
 import com.tlu.Hybird_Library_SE302.dto.resp.CartItemResp;
+import com.tlu.Hybird_Library_SE302.dto.resp.BookResp;
 import com.tlu.Hybird_Library_SE302.model.CartItem;
 import com.tlu.Hybird_Library_SE302.model.Cart;
 import com.tlu.Hybird_Library_SE302.model.Book;
@@ -61,7 +62,28 @@ public class CartItemService implements ICartItemService {
             .id(item.getId())
             .cartId(item.getCart() != null ? item.getCart().getId() : null)
             .bookId(item.getBook() != null ? item.getBook().getId() : null)
+            .book(mapBookToResp(item.getBook()))
             .bookType(item.getBookType())
+            .build();
+    }
+    private BookResp mapBookToResp(Book book) {
+        if (book == null) return null;
+        return BookResp.builder()
+            .id(book.getId())
+            .title(book.getTitle())
+            .author(book.getAuthor())
+            .publisher(book.getPublisher())
+            .publishYear(book.getPublishYear())
+            .categoryId(book.getCategory() != null ? book.getCategory().getId() : null)
+            .categoryName(book.getCategory() != null ? book.getCategory().getCategoryName() : null)
+            .description(book.getDescription())
+            .bookType(book.getBookType())
+            .likes(book.getLikes())
+            .condition(book.getCondition())
+            .quantity(book.getQuantity())
+            .bookUrl(book.getBookUrl())
+            .imageUrl(book.getImageUrl())
+            .avgRating(book.getAvgRating())
             .build();
     }
 }

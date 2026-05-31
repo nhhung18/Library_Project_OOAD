@@ -5,4 +5,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface IDamageLevelRepository extends JpaRepository<DamageLevel, Integer> {
     boolean existsByLevelName(String levelName);
+    boolean existsById(Integer id);
+
 }

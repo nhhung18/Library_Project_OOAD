@@ -25,8 +25,14 @@ public class CartService implements ICartService {
     }
     @Override
     public CartResp getCartByUserId(int userId) {
-        Cart cart = iCartRepository.findByUserId(userId).orElseThrow(() -> new RuntimeException("Không tìm thấy giỏ hàng của user này!"));
-        return mapToResp(cart);
+        return iCartRepository.findByUserId(userId)
+            .map(this::mapToResp)
+            .orElseGet(() -> {
+                User user = iUserRepository.findById(userId)
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy user!"));
+                Cart cart = Cart.builder().user(user).build();
+                return mapToResp(iCartRepository.save(cart));
+            });
     }
     @Override
     public CartResp createCart(CreateCartReq request) {

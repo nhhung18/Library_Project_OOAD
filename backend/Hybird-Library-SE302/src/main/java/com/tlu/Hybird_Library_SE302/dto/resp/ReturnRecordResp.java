@@ -1,5 +1,6 @@
 package com.tlu.Hybird_Library_SE302.dto.resp;
 import com.tlu.Hybird_Library_SE302.model.BorrowRecord;
+import com.tlu.Hybird_Library_SE302.model.DamageLevel;
 import com.tlu.Hybird_Library_SE302.model.constants.*;
 import lombok.*;
 import java.math.BigDecimal;
@@ -16,7 +17,7 @@ public class ReturnRecordResp {
     private Integer returnDelayDays;
     private BigDecimal fineAmount;
     private ApprovalStatus approvalStatus;
-    private Integer damageLevelId;
+    private DamageLevelResp damageLevel;
     private Boolean isLost;
     private ReturnMethod returnMethod;
 }

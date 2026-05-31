@@ -3,12 +3,15 @@ import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
 import { Search, Globe, Store, CheckCircle2, XCircle, ChevronDown, Plus, Edit, Trash2 } from 'lucide-react';
 import CreateRequestModal from '../components/CreateBorrowRequestModal';
-import { BorrowRecord, ReturnRecord, ApprovalStatus, BorrowStatus, ReceiveMethod, ShipmentStatus, Shipment, BookType } from '../../types';
+import { BorrowRecord, ReturnRecord, ApprovalStatus, BorrowStatus, ReceiveMethod, ReturnMethod, ShipmentStatus, Shipment, BookType } from '../../types';
 import { borrowApi } from '../../api/borrowApi';
 import { returnApi } from '../../api/returnApi';
 import { shipmentApi } from '../../api/shipmentApi';
+import { paymentApi } from '../../api/paymentApi';
 import EditRecordModal from '../components/EditRecordModal';
 import BorrowRecordDetailModal from '../components/BorrowRecordDetailModal';
+import PaymentModal from '../components/PaymentModal';
+import { PaymentMethod } from '../../types';
 
 export default function BorrowingManagement() {
   const [activeTab, setActiveTab] = useState('Yêu cầu mượn');
@@ -27,7 +30,10 @@ export default function BorrowingManagement() {
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [viewingRecord, setViewingRecord] = useState<BorrowRecord | null>(null);
 
-  const tabs = ['Yêu cầu mượn', 'Yêu cầu trả', 'Đang mượn', 'Đã trả', 'Đã hủy', 'Đang giao sách'];
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [paymentRecord, setPaymentRecord] = useState<ReturnRecord | null>(null);
+
+  const tabs = ['Yêu cầu mượn', 'Yêu cầu trả', 'Đang mượn', 'Đã trả', 'Đã hủy', 'Giao hàng'];
 
   useEffect(() => {
     fetchData();
@@ -51,9 +57,9 @@ export default function BorrowingManagement() {
   const newRequests = records.filter(r => r?.approvalStatus === ApprovalStatus.PENDING);
   const returnRequests = returnRecords.filter(r => r?.approvalStatus === ApprovalStatus.PENDING);
   const borrowing = records.filter(r => r?.approvalStatus === ApprovalStatus.APPROVED && (r?.borrowStatus === BorrowStatus.BORROWING || r?.borrowStatus === BorrowStatus.REQUESTING));
-  const returned = records.filter(r => r?.borrowStatus === BorrowStatus.RETURNED || r?.borrowStatus === BorrowStatus.AUTO_RETURNED);
+  const approvedReturns = returnRecords.filter(r => r?.approvalStatus === ApprovalStatus.APPROVED);
   const cancelled = records.filter(r => r?.approvalStatus === ApprovalStatus.REJECTED);
-  const delivering = shipments.filter(s => s.shipmentStatus !== ShipmentStatus.DELIVERED && s.shipmentStatus !== ShipmentStatus.FAILED && s.shipmentStatus !== ShipmentStatus.RETURNED_TO_LIB);
+  const delivering = shipments;
 
   const handleCreateRequest = async (newRequest: any) => {
     // Integrate creation when backend creates records
@@ -155,6 +161,46 @@ export default function BorrowingManagement() {
       }
     } catch (error) {
       console.error('Update return lost status failed', error);
+    }
+  };
+
+  const handleUpdateReturnDamage = async (id: number, damageLevelId: number) => {
+    try {
+      const record = returnRecords.find(r => r.id === id);
+      if (record) {
+        const mockDamageLevels: Record<number, any> = {
+          1: { id: 1, levelName: 'Nhẹ', percentValue: 20, description: '' },
+          2: { id: 2, levelName: 'Nặng', percentValue: 50, description: '' },
+          3: { id: 3, levelName: 'Rất Nặng', percentValue: 80, description: '' }
+        };
+        await returnApi.updateReturnRecord(id, {
+          ...record,
+          damageLevel: damageLevelId ? mockDamageLevels[damageLevelId] : null
+        });
+        fetchData();
+      }
+    } catch (error) {
+      console.error('Update return damage level failed', error);
+    }
+  };
+
+  const handleCreatePayment = (id: number) => {
+    const record = returnRecords.find(r => r.id === id);
+    if (record) {
+      setPaymentRecord(record);
+      setIsPaymentModalOpen(true);
+    }
+  };
+
+  const handleConfirmPayment = async (id: number, method: PaymentMethod) => {
+    try {
+      await paymentApi.processReturnPayment(id, { paymentMethod: method });
+      console.log(`Đã lưu thanh toán cho đơn ${id} qua ${method} vào database`);
+      await fetchData();
+      setActiveTab('Đã trả');
+    } catch (error) {
+      console.error('Lỗi khi lưu thanh toán:', error);
+      alert('Đã xảy ra lỗi khi tạo hóa đơn thanh toán.');
     }
   };
 
@@ -368,6 +414,8 @@ export default function BorrowingManagement() {
           <th className="px-6 py-5 text-center">SỐ NGÀY TRỄ</th>
           <th className="px-6 py-5 text-center">PHÍ PHẠT</th>
           <th className="px-6 py-5 text-center">BÁO MẤT SÁCH</th>
+          <th className="px-6 py-5 text-center">TÌNH TRẠNG SÁCH</th>
+          <th className="px-6 py-5 text-center">TRẢ SÁCH</th>
           <th className="px-6 py-5">PHÊ DUYỆT</th>
           <th className="px-6 py-5 text-center">THAO TÁC</th>
         </tr>
@@ -375,12 +423,12 @@ export default function BorrowingManagement() {
       <tbody className="text-[13px] text-gray-700">
         {filteredReturnData(data).length === 0 ? (
           <tr>
-            <td colSpan={8} className="px-6 py-12 text-center text-gray-500 font-medium">Không tìm thấy dữ liệu.</td>
+            <td colSpan={10} className="px-6 py-12 text-center text-gray-500 font-medium">Không tìm thấy dữ liệu.</td>
           </tr>
         ) : (
           filteredReturnData(data).map((row: ReturnRecord, index) => (
             <tr key={row.id || index} className="border-b border-gray-100 hover:bg-gray-50 transition-colors bg-white">
-              <td 
+              <td
                 className="px-6 py-6 font-bold text-[#0066cc] cursor-pointer hover:underline"
                 onClick={() => row.borrowRecord && handleViewBorrowRecord(row.borrowRecord)}
                 title="Xem thông tin đơn mượn"
@@ -396,11 +444,10 @@ export default function BorrowingManagement() {
                   <select
                     value={row.isLost ? "true" : "false"}
                     onChange={(e) => handleUpdateReturnLost(row.id, e.target.value === "true")}
-                    className={`appearance-none outline-none cursor-pointer text-xs font-bold rounded-full px-3 py-1.5 pr-8 border transition-colors ${
-                      row.isLost
+                    className={`appearance-none outline-none cursor-pointer text-xs font-bold rounded-full px-3 py-1.5 pr-8 border transition-colors ${row.isLost
                         ? 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100'
                         : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'
-                    }`}
+                      }`}
                   >
                     <option value="false">Không</option>
                     <option value="true">Đã mất</option>
@@ -409,6 +456,29 @@ export default function BorrowingManagement() {
                     <ChevronDown size={14} className={row.isLost ? 'text-red-600' : 'text-gray-500'} />
                   </div>
                 </div>
+              </td>
+              <td className="px-6 py-6 text-center">
+                <div className="relative inline-block text-left">
+                  <select
+                    value={row.damageLevel?.id || ""}
+                    onChange={(e) => handleUpdateReturnDamage(row.id, parseInt(e.target.value))}
+                    className="appearance-none outline-none text-xs font-bold rounded-full px-3 py-1.5 pr-8 border border-gray-200 text-gray-700 bg-gray-50 hover:bg-gray-100 cursor-pointer transition-colors"
+                  >
+                    <option value="">Bình thường</option>
+                    <option value="1">Nhẹ - 20%</option>
+                    <option value="2">Nặng - 50%</option>
+                    <option value="3">Rất Nặng - 80%</option>
+                  </select>
+                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2">
+                    <ChevronDown size={14} className="text-gray-500" />
+                  </div>
+                </div>
+              </td>
+              <td className="px-6 py-6 text-center">
+                <span className="font-medium text-gray-600 bg-gray-100 px-2.5 py-1 rounded-md text-xs whitespace-nowrap">
+                  {row.returnMethod === ReturnMethod.EBOOK ? 'Ebook' :
+                    row.returnMethod === ReturnMethod.HOME_RETURN ? 'Qua ĐVVC' : 'Thư viện'}
+                </span>
               </td>
               <td className="px-6 py-6">
                 <div className="relative inline-block">
@@ -427,9 +497,19 @@ export default function BorrowingManagement() {
                 </div>
               </td>
               <td className="px-6 py-6 text-center">
-                <div className="flex items-center justify-center gap-4 text-gray-400">
-                  <button onClick={() => handleEditRecord(row, 'return')} className="hover:text-gray-600 transition-colors" title="Sửa thông tin"><Edit size={18} /></button>
-                  <button onClick={() => handleDeleteReturn(row.id)} className="hover:text-red-500 transition-colors" title="Xoá yêu cầu"><Trash2 size={18} /></button>
+                <div className="flex flex-col items-center justify-center gap-2">
+                  <div className="flex items-center gap-4 text-gray-400">
+                    <button onClick={() => handleEditRecord(row, 'return')} className="hover:text-gray-600 transition-colors" title="Sửa thông tin"><Edit size={18} /></button>
+                    <button onClick={() => handleDeleteReturn(row.id)} className="hover:text-red-500 transition-colors" title="Xoá yêu cầu"><Trash2 size={18} /></button>
+                  </div>
+                  {row.approvalStatus === ApprovalStatus.PENDING && (row.fineAmount > 0 || row.damageLevel || row.isLost) && (
+                    <button
+                      onClick={() => handleCreatePayment(row.id)}
+                      className="border border-green-200 bg-green-50 text-green-700 hover:bg-green-100 font-bold text-[10px] px-3 py-1.5 rounded-full transition-colors uppercase whitespace-nowrap"
+                    >
+                      Tạo thanh toán
+                    </button>
+                  )}
                 </div>
               </td>
             </tr>
@@ -446,49 +526,55 @@ export default function BorrowingManagement() {
           <th className="px-6 py-5">MÃ GIAO HÀNG</th>
           <th className="px-6 py-5">ĐỘC GIẢ</th>
           <th className="px-6 py-5">SÁCH</th>
-          <th className="px-6 py-5">ĐỊA CHỈ</th>
+          <th className="px-6 py-5">LIÊN HỆ</th>
           <th className="px-6 py-5 text-center">TRẠNG THÁI</th>
         </tr>
       </thead>
       <tbody className="text-[13px] text-gray-700">
-        {shipments.length === 0 ? (
+        {delivering.length === 0 ? (
           <tr>
             <td colSpan={5} className="px-6 py-12 text-center text-gray-500 font-medium">Không tìm thấy giao dịch.</td>
           </tr>
         ) : (
-          shipments.map((row: Shipment, index) => (
-            <tr key={row.id || index} className="border-b border-gray-100 hover:bg-gray-50 transition-colors bg-white">
-              <td className="px-6 py-6 font-bold text-gray-500">SHP-{row.id}</td>
-              <td className="px-6 py-6">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600 font-bold text-xs shrink-0 shadow-inner">
-                    {getAvatarInitials(row.borrowRecord?.user?.userName)}
+          delivering.map((row: Shipment, index) => {
+            const borrowRecord = row.borrowRecord || records.find(r => r.id === row.borrowRecordId);
+            const user = borrowRecord?.user;
+            const book = borrowRecord?.book;
+            
+            return (
+              <tr key={row.id || index} className="border-b border-gray-100 hover:bg-gray-50 transition-colors bg-white">
+                <td className="px-6 py-6 font-bold text-gray-500">{row.trackingCode || `SHP-${row.id}`}</td>
+                <td className="px-6 py-6">
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-blue-50 border border-blue-200 flex items-center justify-center text-blue-600 font-bold text-xs shrink-0 shadow-inner">
+                      {getAvatarInitials(user?.userName)}
+                    </div>
+                    <p className="font-bold text-gray-900">{user?.userName || 'N/A'}</p>
                   </div>
-                  <p className="font-bold text-gray-900">{row.borrowRecord?.user?.userName || 'N/A'}</p>
-                </div>
-              </td>
-              <td className="px-6 py-6 text-gray-700 font-bold">{row.borrowRecord?.book?.title || 'N/A'}</td>
-              <td className="px-6 py-6 text-gray-500 font-medium">{'N/A'}</td>
-              <td className="px-6 py-6 text-center">
-                <div className="relative inline-block text-left">
-                  <select
-                    value={row.shipmentStatus}
-                    onChange={(e) => handleToggleDeliveringStatus(row.id, e.target.value)}
-                    className="appearance-none bg-yellow-50 text-yellow-700 border border-yellow-200 text-xs font-bold rounded-full px-3 py-1.5 pr-8 cursor-pointer focus:outline-none focus:ring-1 focus:ring-yellow-300"
-                  >
-                    <option value={ShipmentStatus.WAITING_CONFIRMATION}>Chờ xác nhận</option>
-                    <option value={ShipmentStatus.WAITING_FOR_PICKUP}>Chờ lấy hàng</option>
-                    <option value={ShipmentStatus.ON_DELIVERY}>Đang giao</option>
-                    <option value={ShipmentStatus.DELIVERED}>Giao thành công</option>
-                    <option value={ShipmentStatus.FAILED}>Thất bại</option>
-                  </select>
-                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2">
-                    <ChevronDown size={14} className="text-yellow-600" />
+                </td>
+                <td className="px-6 py-6 text-gray-700 font-bold">{book?.title || 'N/A'}</td>
+                <td className="px-6 py-6 text-gray-500 font-medium">{user?.email || user?.phoneNum || 'N/A'}</td>
+                <td className="px-6 py-6 text-center">
+                  <div className="relative inline-block text-left">
+                    <select
+                      value={row.shipmentStatus}
+                      onChange={(e) => handleToggleDeliveringStatus(row.id, e.target.value)}
+                      className="appearance-none bg-yellow-50 text-yellow-700 border border-yellow-200 text-xs font-bold rounded-full px-3 py-1.5 pr-8 cursor-pointer focus:outline-none focus:ring-1 focus:ring-yellow-300"
+                    >
+                      <option value={ShipmentStatus.WAITING_CONFIRMATION}>Chờ xác nhận</option>
+                      <option value={ShipmentStatus.WAITING_FOR_PICKUP}>Chờ lấy hàng</option>
+                      <option value={ShipmentStatus.ON_DELIVERY}>Đang giao</option>
+                      <option value={ShipmentStatus.DELIVERED}>Giao thành công</option>
+                      <option value={ShipmentStatus.FAILED}>Thất bại</option>
+                    </select>
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2">
+                      <ChevronDown size={14} className="text-yellow-600" />
+                    </div>
                   </div>
-                </div>
-              </td>
-            </tr>
-          ))
+                </td>
+              </tr>
+            );
+          })
         )}
       </tbody>
     </table>
@@ -542,9 +628,9 @@ export default function BorrowingManagement() {
                 {activeTab === 'Yêu cầu mượn' && renderBorrowTable(newRequests)}
                 {activeTab === 'Yêu cầu trả' && renderReturnTable(returnRequests)}
                 {activeTab === 'Đang mượn' && renderBorrowTable(borrowing)}
-                {activeTab === 'Đã trả' && renderBorrowTable(returned)}
+                {activeTab === 'Đã trả' && renderReturnTable(approvedReturns)}
                 {activeTab === 'Đã hủy' && renderBorrowTable(cancelled)}
-                {activeTab === 'Đang giao sách' && renderDeliveringTable()}
+                {activeTab === 'Giao hàng' && renderDeliveringTable()}
               </div>
             </div>
           </div>
@@ -563,6 +649,13 @@ export default function BorrowingManagement() {
         isOpen={isDetailModalOpen}
         onClose={() => setIsDetailModalOpen(false)}
         record={viewingRecord}
+      />
+      <PaymentModal
+        isOpen={isPaymentModalOpen}
+        onClose={() => setIsPaymentModalOpen(false)}
+        record={paymentRecord}
+        borrowRecords={records}
+        onConfirm={handleConfirmPayment}
       />
     </div>
   );

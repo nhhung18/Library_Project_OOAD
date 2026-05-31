@@ -8,4 +8,7 @@ public interface IPaymentTransactionService {
     PaymentTransactionResp createPaymentTransaction(CreatePaymentTransactionReq request);
     PaymentTransactionResp updatePaymentTransaction(int id, UpdatePaymentTransactionReq request);
     void deletePaymentTransaction(int id);
+    
+    com.tlu.Hybird_Library_SE302.dto.resp.PaymentCalculationResp calculateReturnPayment(int returnRecordId);
+    PaymentTransactionResp processReturnPayment(int returnRecordId, ProcessReturnPaymentReq request);
 }

@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { motion } from 'motion/react';
-import { ArrowLeft, ShoppingBag, ArrowRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
+import { ShoppingBag, ChevronDown } from 'lucide-react';
 
 interface CartViewProps {
   books: any[];
-  setBooks: React.Dispatch<React.SetStateAction<any[]>>;
+  onRemoveItem: (cartItemId: number) => void;
+  onClearCart: () => void;
+  onUpdateItemType: (cartItemId: number, newType: 'Ebook' | 'Sách giấy') => void;
   onBorrowTrigger: (mode: 'ebook' | 'offline') => void;
   onBack: () => void;
 }
@@ -26,7 +28,54 @@ const GenericConfirmModal = ({ isOpen, onClose, onConfirm, message, variant }: a
   );
 };
 
-const CartView = ({ books, setBooks, onBorrowTrigger, onBack }: CartViewProps) => {
+const TypeSelector = ({ currentType, onSelect }: { currentType: string, onSelect: (type: 'Ebook' | 'Sách giấy') => void }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const options: ('Ebook' | 'Sách giấy')[] = ['Ebook', 'Sách giấy'];
+
+  return (
+    <div className="relative">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="flex items-center gap-2 px-5 py-2 rounded-full glass-panel text-[#1e3b2b] text-xs font-black uppercase tracking-wider shadow-sm hover:shadow-md hover:bg-white/80 transition-all cursor-pointer"
+      >
+        <span>{currentType}</span>
+        <ChevronDown size={14} className={`transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+      </button>
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -4, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -4, scale: 0.95 }}
+            transition={{ duration: 0.15 }}
+            className="absolute top-full mt-2 left-1/2 -translate-x-1/2 z-50 glass-panel rounded-2xl overflow-hidden shadow-xl border border-white/40 min-w-[140px]"
+          >
+            {options.map((option) => (
+              <button
+                key={option}
+                onClick={() => {
+                  if (option !== currentType) {
+                    onSelect(option);
+                  }
+                  setIsOpen(false);
+                }}
+                className={`w-full px-5 py-3 text-xs font-bold uppercase tracking-wider text-left transition-all ${
+                  option === currentType
+                    ? 'bg-[#1e3b2b]/10 text-[#1e3b2b]'
+                    : 'text-gray-500 hover:bg-white/60 hover:text-gray-900'
+                }`}
+              >
+                {option}
+              </button>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
+const CartView = ({ books, onRemoveItem, onClearCart, onUpdateItemType, onBorrowTrigger, onBack }: CartViewProps) => {
   const [filter, setFilter] = useState('Tất cả');
   const [modalConfig, setModalConfig] = useState<{ isOpen: boolean; message: string; targetId: number | 'all' | null; variant: 'danger' | 'primary' }>({
     isOpen: false, message: '', targetId: null, variant: 'danger'
@@ -44,8 +93,8 @@ const CartView = ({ books, setBooks, onBorrowTrigger, onBack }: CartViewProps) =
   }
 
   const handleConfirmAction = () => {
-    if (modalConfig.targetId === 'all') setBooks([]);
-    else if (modalConfig.targetId !== null) setBooks(prev => prev.filter(b => b.id !== modalConfig.targetId));
+    if (modalConfig.targetId === 'all') onClearCart();
+    else if (modalConfig.targetId !== null) onRemoveItem(Number(modalConfig.targetId));
     setModalConfig(prev => ({ ...prev, isOpen: false }));
   };
 
@@ -59,12 +108,12 @@ const CartView = ({ books, setBooks, onBorrowTrigger, onBack }: CartViewProps) =
         </div>
         <div className="flex items-center space-x-4">
           <button onClick={() => setModalConfig({ isOpen: true, message: 'Xác nhận xóa tất cả?', targetId: 'all', variant: 'danger' })} className="px-10 py-3 rounded-full border border-white/60 bg-white/50 backdrop-blur-md font-bold text-red-500 hover:bg-white/80 shadow-sm transition-all hover:-translate-y-0.5">Xóa tất cả</button>
-          <button onClick={() => books.length > 0 && onBorrowTrigger(books[0].type.toLowerCase() as any)} className="px-10 py-3 rounded-full bg-[#1e3b2b] text-white font-bold shadow-md shadow-[#1e3b2b]/20 hover:shadow-lg hover:-translate-y-0.5 transition-all active:scale-95">Mượn tất cả</button>
+          <button onClick={() => books.length > 0 && onBorrowTrigger(books[0].type.toLowerCase() === 'ebook' ? 'ebook' : 'offline')} className="px-10 py-3 rounded-full bg-[#1e3b2b] text-white font-bold shadow-md shadow-[#1e3b2b]/20 hover:shadow-lg hover:-translate-y-0.5 transition-all active:scale-95">Mượn tất cả</button>
         </div>
       </div>
 
       <div className="flex items-center space-x-4 mb-14">
-        {['Tất cả', 'Ebook', 'Offline'].map((tab) => (
+        {['Tất cả', 'Ebook', 'Sách giấy'].map((tab) => (
           <button key={tab} onClick={() => setFilter(tab)} className={`px-8 py-2.5 rounded-full font-bold text-sm transition-all ${filter === tab ? 'bg-[#1e3b2b] text-white shadow-md shadow-[#1e3b2b]/20' : 'bg-white/50 border border-white/60 text-gray-500 hover:bg-white/80 hover:text-gray-900 backdrop-blur-md'}`}>{tab}</button>
         ))}
       </div>
@@ -78,10 +127,15 @@ const CartView = ({ books, setBooks, onBorrowTrigger, onBack }: CartViewProps) =
             <div key={book.id} className="grid grid-cols-12 px-10 py-8 items-center group hover:bg-gray-50/30 transition-all duration-300">
               <div className="col-span-2"><div className="w-24 h-24 rounded-2xl overflow-hidden shadow-sm border border-gray-100 bg-white p-1.5 transition-transform group-hover:scale-105"><img src={book.image} alt={book.title} className="w-full h-full object-cover rounded-xl" referrerPolicy="no-referrer" /></div></div>
               <div className="col-span-4 pl-4"><h4 className="text-xl font-bold text-gray-900 group-hover:text-[#1e3b2b] transition-colors">{book.title}</h4></div>
-              <div className="col-span-3 flex justify-center"><span className="px-6 py-2 rounded-full glass-panel text-[#1e3b2b] text-xs font-black uppercase tracking-wider shadow-sm">{book.type}</span></div>
+              <div className="col-span-3 flex justify-center">
+                <TypeSelector
+                  currentType={book.type}
+                  onSelect={(newType) => onUpdateItemType(book.id, newType)}
+                />
+              </div>
               <div className="col-span-3 flex items-center justify-end space-x-8">
                 <button onClick={() => setModalConfig({ isOpen: true, message: 'Xác nhận xóa cuốn sách này?', targetId: book.id, variant: 'danger' })} className="text-sm font-bold text-gray-400 hover:text-red-500 transition-colors">Xóa</button>
-                <button onClick={() => onBorrowTrigger(book.type.toLowerCase() as any)} className="bg-[#1e3b2b] text-white px-10 py-3 rounded-full font-bold text-sm shadow-md shadow-[#1e3b2b]/20 hover:shadow-lg hover:-translate-y-0.5 transition-all active:scale-95 active:translate-y-0">Mượn</button>
+                <button onClick={() => onBorrowTrigger(book.type.toLowerCase() === 'ebook' ? 'ebook' : 'offline')} className="bg-[#1e3b2b] text-white px-10 py-3 rounded-full font-bold text-sm shadow-md shadow-[#1e3b2b]/20 hover:shadow-lg hover:-translate-y-0.5 transition-all active:scale-95 active:translate-y-0">Mượn</button>
               </div>
             </div>
           ))}

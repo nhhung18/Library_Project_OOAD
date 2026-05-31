@@ -1,5 +1,6 @@
 package com.tlu.Hybird_Library_SE302.service.core.impl;
 import com.tlu.Hybird_Library_SE302.dto.req.*;
+import com.tlu.Hybird_Library_SE302.dto.resp.DamageLevelResp;
 import com.tlu.Hybird_Library_SE302.dto.resp.ReturnRecordResp;
 import com.tlu.Hybird_Library_SE302.model.PenaltyCost;
 import com.tlu.Hybird_Library_SE302.model.ReturnRecord;
@@ -49,12 +50,19 @@ public class ReturnRecordService implements IReturnRecordService {
                 ChronoUnit.DAYS.between(borrowRecord.getDueDate(), returnDate)
         );
         
+        com.tlu.Hybird_Library_SE302.model.constants.ApprovalStatus approvalStatus = request.getApprovalStatus() != null ? request.getApprovalStatus() : com.tlu.Hybird_Library_SE302.model.constants.ApprovalStatus.PENDING;
+        if (borrowRecord.getBookType() == com.tlu.Hybird_Library_SE302.model.constants.BookType.EBOOK) {
+            approvalStatus = com.tlu.Hybird_Library_SE302.model.constants.ApprovalStatus.APPROVED;
+            borrowRecord.setBorrowStatus(com.tlu.Hybird_Library_SE302.model.constants.BorrowStatus.RETURNED);
+            iBorrowRecordRepository.save(borrowRecord);
+        }
+        
         ReturnRecord record = ReturnRecord.builder()
             .borrowRecord(borrowRecord)
             .returnDate(returnDate)
             .returnDelayDays(Integer.valueOf((int) lateDays))
             .fineAmount(penaltyCost.getPrice().multiply(BigDecimal.valueOf(lateDays)))
-            .approvalStatus(request.getApprovalStatus() != null ? request.getApprovalStatus() : com.tlu.Hybird_Library_SE302.model.constants.ApprovalStatus.PENDING)
+            .approvalStatus(approvalStatus)
             .damageLevel(damageLevel)
             .isLost(request.getIsLost() != null ? request.getIsLost() : false)
             .returnMethod(request.getReturnMethod() != null ? request.getReturnMethod() : com.tlu.Hybird_Library_SE302.model.constants.ReturnMethod.LIBRARY_RETURN)
@@ -64,9 +72,11 @@ public class ReturnRecordService implements IReturnRecordService {
     @Override
     public ReturnRecordResp updateReturnRecord(int id, UpdateReturnRecordReq request) {
         ReturnRecord record = iReturnRecordRepository.findById(id).orElseThrow(() -> new RuntimeException("Không tìm thấy phiếu trả!"));
-        if(request.getDamageLevelId() != null) {
-            DamageLevel damageLevel = iDamageLevelRepository.findById(request.getDamageLevelId()).orElse(null);
+        if(request.getDamageLevel() != null) {
+            DamageLevel damageLevel = iDamageLevelRepository.findById(request.getDamageLevel().getId()).orElse(null);
             record.setDamageLevel(damageLevel);
+        } else {
+            record.setDamageLevel(null);
         }
         if(request.getReturnDelayDays() != null) record.setReturnDelayDays(request.getReturnDelayDays());
         if(request.getFineAmount() != null) record.setFineAmount(request.getFineAmount());
@@ -81,6 +91,15 @@ public class ReturnRecordService implements IReturnRecordService {
         iReturnRecordRepository.delete(record);
     }
     private ReturnRecordResp mapToResp(ReturnRecord record) {
+        DamageLevelResp damageLevelResp = null;
+        if (record.getDamageLevel() != null) {
+            damageLevelResp = DamageLevelResp.builder()
+                .id(record.getDamageLevel().getId())
+                .levelName(record.getDamageLevel().getLevelName())
+                .percentValue(record.getDamageLevel().getPercentValue())
+                .description(record.getDamageLevel().getDescription())
+                .build();
+        }
         return ReturnRecordResp.builder()
             .id(record.getId())
             .borrowRecord(record.getBorrowRecord() != null ? record.getBorrowRecord() : null)
@@ -88,7 +107,7 @@ public class ReturnRecordService implements IReturnRecordService {
             .returnDelayDays(record.getReturnDelayDays())
             .fineAmount(record.getFineAmount())
             .approvalStatus(record.getApprovalStatus())
-            .damageLevelId(record.getDamageLevel() != null ? record.getDamageLevel().getId() : null)
+            .damageLevel(damageLevelResp)
             .isLost(record.getIsLost())
             .returnMethod(record.getReturnMethod())
             .build();

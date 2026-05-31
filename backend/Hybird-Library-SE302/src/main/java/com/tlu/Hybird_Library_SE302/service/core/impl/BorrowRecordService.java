@@ -4,6 +4,8 @@ import com.tlu.Hybird_Library_SE302.dto.resp.BorrowRecordResp;
 import com.tlu.Hybird_Library_SE302.model.BorrowRecord;
 import com.tlu.Hybird_Library_SE302.model.Book;
 import com.tlu.Hybird_Library_SE302.model.User;
+import com.tlu.Hybird_Library_SE302.model.ReturnRecord;
+import com.tlu.Hybird_Library_SE302.model.Shipment;
 import com.tlu.Hybird_Library_SE302.model.constants.ApprovalStatus;
 import com.tlu.Hybird_Library_SE302.model.constants.BookType;
 import com.tlu.Hybird_Library_SE302.model.constants.BorrowStatus;
@@ -11,9 +13,12 @@ import com.tlu.Hybird_Library_SE302.model.constants.ReceiveMethod;
 import com.tlu.Hybird_Library_SE302.repository.IBorrowRecordRepository;
 import com.tlu.Hybird_Library_SE302.repository.IBookRepository;
 import com.tlu.Hybird_Library_SE302.repository.IUserRepository;
+import com.tlu.Hybird_Library_SE302.repository.IReturnRecordRepository;
+import com.tlu.Hybird_Library_SE302.repository.IShipmentRepository;
 import com.tlu.Hybird_Library_SE302.service.core.intf.IBorrowRecordService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -26,7 +31,9 @@ public class BorrowRecordService implements IBorrowRecordService {
     private final IBorrowRecordRepository iBorrowRecordRepository;
     private final IUserRepository iUserRepository;
     private final IBookRepository iBookRepository;
-    
+    private final IReturnRecordRepository iReturnRecordRepository;
+    private final IShipmentRepository iShipmentRepository;
+
     @Override
     public List<BorrowRecordResp> getAllBorrowRecords() {
         return iBorrowRecordRepository.findAll().stream().map(this::mapToResp).toList();
@@ -73,13 +80,20 @@ public class BorrowRecordService implements IBorrowRecordService {
                     .renew(0)
                     .receiveMethod(request.getReceiveMethod() != null ? request.getReceiveMethod() : ReceiveMethod.LIBRARY_PICKUP)
                     .build();
-            iBorrowRecordRepository.save(physicalRecord);
-        return mapToResp(iBorrowRecordRepository.save(physicalRecord));
+            BorrowRecord savedRecord = iBorrowRecordRepository.save(physicalRecord);
+        return mapToResp(savedRecord);
     }
     @Override
     public BorrowRecordResp updateBorrowRecord(int id, UpdateBorrowRecordReq request) {
         BorrowRecord record = iBorrowRecordRepository.findById(id).orElseThrow(() -> new RuntimeException("Không tìm thấy phiếu mượn!"));
-        if(request.getDueDate() != null) record.setDueDate(request.getDueDate());
+        if(request.getDueDate() != null) {
+            record.setDueDate(request.getDueDate());
+        } else if (request.getRenew() != null && !request.getRenew().equals(record.getRenew())) {
+            int diff = request.getRenew() - record.getRenew();
+            if (diff > 0 && record.getDueDate() != null) {
+                record.setDueDate(record.getDueDate().plusDays(14L * diff));
+            }
+        }
         if(request.getBorrowStatus() != null) record.setBorrowStatus(request.getBorrowStatus());
         if(request.getApprovalStatus() != null) record.setApprovalStatus(request.getApprovalStatus());
         if(request.getRenew() != null) record.setRenew(request.getRenew());
@@ -87,8 +101,26 @@ public class BorrowRecordService implements IBorrowRecordService {
         return mapToResp(iBorrowRecordRepository.save(record));
     }
     @Override
+    @Transactional
     public void deleteBorrowRecord(int id) {
         BorrowRecord record = iBorrowRecordRepository.findById(id).orElseThrow(() -> new RuntimeException("Không tìm thấy phiếu mượn!"));
+
+        // Delete referencing Shipments first
+        List<Shipment> shipments = iShipmentRepository.findAll().stream()
+                .filter(s -> s.getBorrowRecord() != null && s.getBorrowRecord().getId() == id)
+                .toList();
+        for (Shipment s : shipments) {
+            iShipmentRepository.deleteById(s.getId());
+        }
+
+        // Delete referencing ReturnRecords next
+        List<ReturnRecord> returnRecords = iReturnRecordRepository.findAll().stream()
+                .filter(r -> r.getBorrowRecord() != null && r.getBorrowRecord().getId() == id)
+                .toList();
+        for (ReturnRecord r : returnRecords) {
+            iReturnRecordRepository.deleteById(r.getId());
+        }
+
         iBorrowRecordRepository.delete(record);
     }
     private BorrowRecordResp mapToResp(BorrowRecord record) {

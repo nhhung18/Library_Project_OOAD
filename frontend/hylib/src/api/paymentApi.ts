@@ -16,5 +16,13 @@ export const paymentApi = {
 
   deletePayment: (id: number) => {
     return axiosClient.delete(`/payment-transactions/${id}`);
+  },
+
+  calculateReturnPayment: (returnId: number) => {
+    return axiosClient.get(`/payment-transactions/calculate-return/${returnId}`);
+  },
+
+  processReturnPayment: (returnId: number, data: { paymentMethod: string }) => {
+    return axiosClient.post(`/payment-transactions/process-return/${returnId}`, data);
   }
 };

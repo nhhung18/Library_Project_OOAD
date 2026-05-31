@@ -40,6 +40,7 @@ export interface Book {
   bookUrl: string;
   imageUrl: string;
   avgRating: number;
+  replacementPrice: number;
 }
 
 export interface User {
@@ -88,8 +89,10 @@ export interface ReturnRecord {
 
 export interface Shipment {
   id: number;
-  borrowRecord: BorrowRecord;
-  returnRecord: ReturnRecord;
+  borrowRecordId?: number;
+  returnRecordId?: number;
+  borrowRecord?: BorrowRecord;
+  returnRecord?: ReturnRecord;
   trackingCode: string;
   shippingFee: number;
   shipmentStatus: ShipmentStatus;
@@ -149,11 +152,34 @@ export interface UserProfile {
 }
 
 export interface BorrowedBook extends Book {
-  type: 'Ebook' | 'Offline';
+  type: 'Ebook' | 'Sách giấy';
+  recordId?: number;
+  returnRecordId?: number;
   expiryDate: string;
   renewCount: string;
   status: string;
   statusColor?: string;
   paymentStatus?: string;
+  approvalStatus?: string;
   actions: string[];
+}
+
+export interface PaymentCalculationResp {
+  lateFee: number;
+  damageFee: number;
+  lostFee: number;
+  totalAmount: number;
+}
+
+export interface Cart {
+  id: number;
+  userId: number;
+}
+
+export interface CartItem {
+  id: number;
+  cartId: number;
+  bookId: number;
+  bookType: BookType;
+  book?: Book;
 }

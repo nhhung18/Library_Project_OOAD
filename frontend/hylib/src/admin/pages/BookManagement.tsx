@@ -17,7 +17,7 @@ export default function BookManagement() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [bookToDelete, setBookToDelete] = useState<number | null>(null);
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
-  
+
   const [books, setBooks] = useState<Book[]>([]);
 
   useEffect(() => {
@@ -91,8 +91,8 @@ export default function BookManagement() {
     setBookToDelete(null);
   };
 
-  const filteredBooks = books.filter(book => 
-    book.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+  const filteredBooks = books.filter(book =>
+    book.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
     book.author.toLowerCase().includes(searchQuery.toLowerCase()) ||
     book.category?.categoryName.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -100,10 +100,10 @@ export default function BookManagement() {
   return (
     <div className="flex h-screen bg-[#f8f9fb] font-sans text-gray-900">
       <Sidebar />
-      
+
       <main className="flex-1 ml-64 flex flex-col h-screen overflow-hidden relative">
         <Header title="Quản lý Kho Sách" />
-        
+
         <div className="p-8 flex-1 overflow-y-auto flex flex-col">
           {/* Header section */}
           <div className="flex justify-between items-center mb-6 shrink-0">
@@ -111,7 +111,7 @@ export default function BookManagement() {
               <h1 className="text-3xl font-bold text-gray-900 mb-1">Kho Sách</h1>
               <p className="text-sm text-gray-500 font-medium">Quản lý và tra cứu toàn bộ danh mục tài liệu.</p>
             </div>
-            
+
             <div className="flex items-center gap-3">
               <div className="relative w-64">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
@@ -123,7 +123,7 @@ export default function BookManagement() {
                   className="pl-9 pr-4 py-2 w-full border border-gray-200 rounded-full focus:outline-none focus:border-[#0066cc] focus:ring-1 focus:ring-[#0066cc] text-sm shadow-sm transition-all bg-white"
                 />
               </div>
-              <button 
+              <button
                 onClick={() => setIsAddModalOpen(true)}
                 className="flex items-center gap-2 bg-[#0066cc] hover:bg-[#0052a3] text-white px-5 py-2 rounded-full font-bold text-sm transition-colors shadow-md"
               >
@@ -159,22 +159,22 @@ export default function BookManagement() {
                   ) : (
                     filteredBooks.map((book, index) => (
                       <tr key={book.id || index} className="border-b border-gray-100 hover:bg-gray-50 transition-colors bg-white">
-                        
+
                         {/* Cover */}
                         <td className="px-6 py-4">
                           <div className="w-12 h-16 bg-gray-50 rounded-md border border-gray-200 flex items-center justify-center text-gray-400 overflow-hidden shrink-0 shadow-sm">
-                             {book.imageUrl ? (
-                               <img src={book.imageUrl} alt="Cover" className="w-full h-full object-cover" />
-                             ) : (
-                               <BookIcon size={20} className={index % 2 === 0 ? "text-gray-400" : "text-[#0066cc]"} />
-                             )}
+                            {book.imageUrl ? (
+                              <img src={book.imageUrl} alt="Cover" className="w-full h-full object-cover" />
+                            ) : (
+                              <BookIcon size={20} className={index % 2 === 0 ? "text-gray-400" : "text-[#0066cc]"} />
+                            )}
                           </div>
                         </td>
 
                         {/* Title & Publisher */}
                         <td className="px-6 py-4">
-                           <p className="font-bold text-gray-900 mb-1">{book.title}</p>
-                           <p className="text-[11px] text-gray-500 font-medium">NXB: {book.publisher}</p>
+                          <p className="font-bold text-gray-900 mb-1">{book.title}</p>
+                          <p className="text-[11px] text-gray-500 font-medium">NXB: {book.publisher}</p>
                         </td>
 
                         {/* Author */}
@@ -196,11 +196,10 @@ export default function BookManagement() {
 
                         {/* Format */}
                         <td className="px-6 py-4">
-                          <span className={`inline-flex items-center justify-center px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wider ${
-                            book.bookType === BookType.EBOOK ? 'bg-purple-50 text-purple-700 border border-purple-200' :
-                            book.bookType === BookType.PHYSICAL_BOOK ? 'bg-blue-50 text-[#0066cc] border border-blue-200' :
-                            'bg-green-50 text-green-700 border border-green-200'
-                          }`}>
+                          <span className={`inline-flex items-center justify-center px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-wider ${book.bookType === BookType.EBOOK ? 'bg-purple-50 text-purple-700 border border-purple-200' :
+                              book.bookType === BookType.PHYSICAL_BOOK ? 'bg-blue-50 text-[#0066cc] border border-blue-200' :
+                                'bg-green-50 text-green-700 border border-green-200'
+                            }`}>
                             {book.bookType}
                           </span>
                         </td>
@@ -213,7 +212,7 @@ export default function BookManagement() {
                         {/* Actions */}
                         <td className="px-6 py-4 text-center">
                           <div className="flex items-center justify-center gap-3 text-gray-400">
-                            <button 
+                            <button
                               onClick={() => {
                                 setSelectedBook(book);
                                 setIsEditModalOpen(true);
@@ -223,7 +222,7 @@ export default function BookManagement() {
                             >
                               <Edit size={18} />
                             </button>
-                            <button 
+                            <button
                               onClick={() => handleDeleteBook(book.id)}
                               className="hover:text-red-500 transition-colors p-1 active:scale-95"
                               title="Xóa"

@@ -10,9 +10,13 @@ interface MyBooksViewProps {
   onReadClick: (id: number) => void;
   onRowClick: (id: number) => void;
   onRenewSuccess: () => void;
-  onLateReturn: () => void;
+  onLateReturn?: (id: number) => void;
   onNavigateTo?: (page: string) => void;
   onBack: () => void;
+  onDeleteRecord?: (book: BorrowedBook) => Promise<void>;
+  onRenew?: (recordId: number) => Promise<void>;
+  onReturnInitiate?: (book: BorrowedBook) => void;
+  onReturnEbook?: (recordId: number) => Promise<void>;
 }
 
 const ReturnConfirmationModal = ({ isOpen, onClose, onConfirm }: { isOpen: boolean, onClose: () => void, onConfirm: () => void }) => (
@@ -74,83 +78,93 @@ const GenericConfirmModal = ({ isOpen, onClose, onConfirm, message, confirmText,
   </AnimatePresence>
 );
 
-const MyBooksView = ({ books, setBooks, onReturnSuccess, onReadClick, onRowClick, onRenewSuccess, onLateReturn, onNavigateTo, onBack }: MyBooksViewProps) => {
+const MyBooksView = ({
+  books,
+  setBooks,
+  onReturnSuccess,
+  onReadClick,
+  onRowClick,
+  onRenewSuccess,
+  onLateReturn,
+  onNavigateTo,
+  onBack,
+  onDeleteRecord,
+  onRenew,
+  onReturnInitiate,
+  onReturnEbook
+}: MyBooksViewProps) => {
   const [activeFilter, setActiveFilter] = useState('Tất cả');
   const [isReturnModalOpen, setIsReturnModalOpen] = useState(false);
   const [isRenewModalOpen, setIsRenewModalOpen] = useState(false);
-  const [selectedBookId, setSelectedBookId] = useState<number | null>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [selectedRecordId, setSelectedRecordId] = useState<number | null>(null);
+  const [selectedBookForDelete, setSelectedBookForDelete] = useState<BorrowedBook | null>(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const func = ['Yêu thích', 'Giỏ sách', 'Theo dõi đơn sách'];
-  const filters = ['Tất cả', 'Ebook', 'Offline', 'Đang mượn', 'Đã đến hạn'];
+  const filters = ['Tất cả', 'Ebook', 'Sách giấy', 'Đang mượn', 'Đã đến hạn'];
 
-  const handleRenewClick = (bookId: number) => {
-    setSelectedBookId(bookId);
+  const handleRenewClick = (recordId: number) => {
+    setSelectedRecordId(recordId);
     setIsRenewModalOpen(true);
   };
 
-  const handleRenewConfirm = () => {
-    if (!selectedBookId) return;
-
-    setBooks(prev => prev.map(book => {
-      if (book.id === selectedBookId) {
-        const currentCount = parseInt(book.renewCount.split('/')[0]);
-        if (currentCount < 2) {
-          const nextCount = currentCount + 1;
-          const newRenewCount = `${nextCount}/2`;
-          const newActions = nextCount === 2
-            ? book.actions.filter(a => a !== 'Gia hạn')
-            : book.actions;
-
-          return {
-            ...book,
-            renewCount: newRenewCount,
-            expiryDate: nextCount === 1 ? '15-6-2026' : '30-6-2026',
-            actions: newActions
-          };
-        }
+  const handleRenewConfirm = async () => {
+    if (!selectedRecordId) return;
+    if (onRenew) {
+      try {
+        await onRenew(selectedRecordId);
+      } catch (err) {
+        console.error(err);
       }
-      return book;
-    }));
-    setIsRenewModalOpen(false);
-    setSelectedBookId(null);
-    onRenewSuccess();
-  };
-
-  const handleReturnClick = (id: number) => {
-    setSelectedBookId(id);
-    setIsReturnModalOpen(true);
-  };
-
-  const handleReturnLocal = () => {
-    if (selectedBookId) {
-      if (selectedBookId === 4) {
-        setIsReturnModalOpen(false);
-        onLateReturn();
-        return;
-      }
-      setBooks(prev => prev.map(book => {
-        if (book.id === selectedBookId) {
-          return {
-            ...book,
-            status: 'Đã trả sách',
-            paymentStatus: 'Đã thanh toán',
-            statusColor: 'text-green-500',
-            actions: ['Trả sách disabled']
-          };
-        }
-        return book;
-      }));
-      setIsReturnModalOpen(false);
-      setSelectedBookId(null);
-      onReturnSuccess();
     }
+    setIsRenewModalOpen(false);
+    setSelectedRecordId(null);
+  };
+
+  const handleReturnClick = (book: BorrowedBook) => {
+    if (book.type === 'Ebook') {
+      setSelectedRecordId(book.recordId || null);
+      setIsReturnModalOpen(true);
+    } else {
+      if (onReturnInitiate) {
+        onReturnInitiate(book);
+      }
+    }
+  };
+
+  const handleReturnLocal = async () => {
+    if (selectedRecordId) {
+      if (onReturnEbook) {
+        try {
+          await onReturnEbook(selectedRecordId);
+        } catch (err) {
+          console.error(err);
+        }
+      }
+      setIsReturnModalOpen(false);
+      setSelectedRecordId(null);
+    }
+  };
+
+  const handleDeleteClick = (book: BorrowedBook) => {
+    setSelectedBookForDelete(book);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!selectedBookForDelete) return;
+    if (onDeleteRecord) {
+      await onDeleteRecord(selectedBookForDelete);
+    }
+    setIsDeleteModalOpen(false);
+    setSelectedBookForDelete(null);
   };
 
   const filteredBooks = books.filter(book => {
     if (activeFilter === 'Tất cả') return true;
     if (activeFilter === 'Ebook') return book.type === 'Ebook';
-    if (activeFilter === 'Offline') return book.type === 'Offline';
+    if (activeFilter === 'Sách giấy') return book.type === 'Sách giấy';
     if (activeFilter === 'Đang mượn') return book.status !== 'Đã trả sách';
     if (activeFilter === 'Đã đến hạn') return book.status.toLowerCase().includes('hạn') || book.status.toLowerCase().includes('trễ');
     return true;
@@ -214,6 +228,7 @@ const MyBooksView = ({ books, setBooks, onReturnSuccess, onReadClick, onRowClick
               <th className="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest">HÌNH THỨC</th>
               <th className="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest">HẾT HẠN</th>
               <th className="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest">GIA HẠN</th>
+              <th className="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest">PHÊ DUYỆT</th>
               <th className="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest">TRẠNG THÁI</th>
               <th className="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">THAO TÁC</th>
             </tr>
@@ -243,6 +258,11 @@ const MyBooksView = ({ books, setBooks, onReturnSuccess, onReadClick, onRowClick
                   <p className="text-gray-500 font-medium">{book.renewCount}</p>
                 </td>
                 <td className="px-8 py-6">
+                  <p className={`font-bold text-sm ${book.approvalStatus === 'APPROVED' ? 'text-green-600' : book.approvalStatus === 'REJECTED' ? 'text-red-500' : 'text-yellow-600'}`}>
+                    {book.approvalStatus === 'APPROVED' ? 'Đã duyệt' : book.approvalStatus === 'REJECTED' ? 'Từ chối' : 'Chờ duyệt'}
+                  </p>
+                </td>
+                <td className="px-8 py-6">
                   <div className="flex flex-col">
                     <p className={`font-bold text-sm ${book.statusColor || 'text-gray-500'}`}>
                       {book.status}
@@ -267,7 +287,7 @@ const MyBooksView = ({ books, setBooks, onReturnSuccess, onReadClick, onRowClick
                         return (
                           <button
                             key={action}
-                            onClick={() => handleRenewClick(book.id)}
+                            onClick={() => handleRenewClick(book.recordId!)}
                             className="bg-[#1e3b2b] text-white px-6 py-2.5 rounded-full font-bold text-sm shadow-md shadow-[#1e3b2b]/20 hover:shadow-lg hover:-translate-y-0.5 transition-all active:scale-95"
                           >
                             Gia hạn
@@ -278,10 +298,43 @@ const MyBooksView = ({ books, setBooks, onReturnSuccess, onReadClick, onRowClick
                         return (
                           <button
                             key={action}
-                            onClick={() => handleReturnClick(book.id)}
+                            onClick={() => handleReturnClick(book)}
                             className="bg-[#1e3b2b] text-white px-6 py-2.5 rounded-full font-bold text-sm shadow-md shadow-[#1e3b2b]/20 hover:shadow-lg hover:-translate-y-0.5 transition-all active:scale-95"
                           >
                             Trả sách
+                          </button>
+                        );
+                      }
+                      if (action === 'Thanh toán') {
+                        return (
+                          <button
+                            key={action}
+                            onClick={() => onLateReturn?.(book.id)}
+                            className="bg-red-500 text-white px-6 py-2.5 rounded-full font-bold text-sm shadow-md shadow-red-500/20 hover:shadow-lg hover:-translate-y-0.5 transition-all active:scale-95"
+                          >
+                            Thanh toán
+                          </button>
+                        );
+                      }
+                      if (action === 'Xóa') {
+                        return (
+                          <button
+                            key={action}
+                            onClick={() => handleDeleteClick(book)}
+                            className="bg-red-500 text-white px-6 py-2.5 rounded-full font-bold text-sm shadow-md shadow-red-500/20 hover:shadow-lg hover:-translate-y-0.5 transition-all active:scale-95"
+                          >
+                            Xóa
+                          </button>
+                        );
+                      }
+                      if (action === 'Hủy') {
+                        return (
+                          <button
+                            key={action}
+                            onClick={() => handleDeleteClick(book)}
+                            className="bg-red-500 text-white px-6 py-2.5 rounded-full font-bold text-sm shadow-md shadow-red-500/20 hover:shadow-lg hover:-translate-y-0.5 transition-all active:scale-95"
+                          >
+                            Hủy
                           </button>
                         );
                       }
@@ -309,6 +362,7 @@ const MyBooksView = ({ books, setBooks, onReturnSuccess, onReadClick, onRowClick
 
       <ReturnConfirmationModal isOpen={isReturnModalOpen} onClose={() => { setIsReturnModalOpen(false); setSelectedBookId(null); }} onConfirm={handleReturnLocal} />
       <GenericConfirmModal isOpen={isRenewModalOpen} onClose={() => { setIsRenewModalOpen(false); setSelectedBookId(null); }} onConfirm={handleRenewConfirm} message="Xác nhận gia hạn sách?" confirmText="Xác nhận" variant="primary" />
+      <GenericConfirmModal isOpen={isDeleteModalOpen} onClose={() => { setIsDeleteModalOpen(false); setSelectedBookForDelete(null); }} onConfirm={handleDeleteConfirm} message={selectedBookForDelete?.actions.includes('Hủy') ? 'Bạn có chắc chắn muốn hủy yêu cầu mượn này?' : 'Bạn có chắc chắn muốn xóa bản ghi này?'} confirmText="Xác nhận" variant="danger" />
     </motion.div>
   );
 };

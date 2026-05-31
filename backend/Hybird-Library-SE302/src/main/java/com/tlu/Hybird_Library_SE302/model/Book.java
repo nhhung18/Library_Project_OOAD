@@ -54,4 +54,8 @@ public class Book extends BaseIdObject {
     @Column(name = "avg_rating", precision = 2, scale = 1)
     @Builder.Default
     private BigDecimal avgRating = BigDecimal.ZERO;
+    
+    @Column(name = "replacement_price", precision = 10, scale = 1)
+    @Builder.Default
+    private BigDecimal replacementPrice = BigDecimal.ZERO;
 }

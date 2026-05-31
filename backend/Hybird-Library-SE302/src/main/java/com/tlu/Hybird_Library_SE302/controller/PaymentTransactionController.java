@@ -33,4 +33,14 @@ public class PaymentTransactionController {
         iPaymentTransactionService.deletePaymentTransaction(id);
         return ResponseEntity.ok(ResponseWrapper.builder().status(HttpStatus.OK).code(200).data("Xóa thành công!").build());
     }
+    
+    @GetMapping("/calculate-return/{returnId}")
+    public ResponseEntity<?> calculateReturnPayment(@PathVariable int returnId) {
+        return ResponseEntity.ok(ResponseWrapper.builder().status(HttpStatus.OK).code(200).data(iPaymentTransactionService.calculateReturnPayment(returnId)).build());
+    }
+
+    @PostMapping("/process-return/{returnId}")
+    public ResponseEntity<?> processReturnPayment(@PathVariable int returnId, @RequestBody com.tlu.Hybird_Library_SE302.dto.req.ProcessReturnPaymentReq request) {
+        return ResponseEntity.ok(ResponseWrapper.builder().status(HttpStatus.CREATED).code(201).data(iPaymentTransactionService.processReturnPayment(returnId, request)).build());
+    }
 }

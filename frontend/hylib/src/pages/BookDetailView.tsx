@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
   ArrowLeft,
@@ -12,7 +12,8 @@ import {
   User,
   X
 } from 'lucide-react';
-import { BorrowedBook } from '../types';
+import { BorrowedBook, Book } from '../types';
+import { bookApi } from '../api/bookApi';
 
 interface BookDetailViewProps {
   onBack: () => void;
@@ -21,6 +22,10 @@ interface BookDetailViewProps {
   borrowedInfo?: BorrowedBook;
   onRenew?: (id: number) => void;
   onRead?: (id: number) => void;
+  isLoggedIn?: boolean;
+  onRequireLogin?: () => void;
+  onAddToCart?: (bookId: number, type: 'Ebook' | 'Sách giấy') => void;
+  cartBooks?: any[];
 }
 
 const BorrowModal = ({ isOpen, onClose, onConfirm }: { isOpen: boolean, onClose: () => void, onConfirm: (mode: 'ebook' | 'offline') => void }) => {
@@ -43,7 +48,7 @@ const BorrowModal = ({ isOpen, onClose, onConfirm }: { isOpen: boolean, onClose:
                   <span>Ebook</span>
                 </button>
                 <button onClick={() => setBorrowMode('offline')} className={`flex items-center justify-center space-x-3 py-4 rounded-[2rem] border transition-all font-bold text-base ${borrowMode === 'offline' ? 'border-[#1e3b2b] bg-[#1e3b2b]/5 text-[#1e3b2b] ring-1 ring-[#1e3b2b]' : 'border-white/60 bg-white/50 text-gray-400 hover:bg-white/80'}`}>
-                  <span>Offline</span>
+                  <span>Sách giấy</span>
                 </button>
               </div>
             </div>
@@ -79,15 +84,75 @@ const GenericConfirmModal = ({ isOpen, onClose, onConfirm, message, confirmText,
   </AnimatePresence>
 );
 
-const BookDetailView = ({ onBack, bookId, onStartBorrow, borrowedInfo, onRenew, onRead }: BookDetailViewProps) => {
+const AddToCartModal = ({ isOpen, onClose, onConfirm }: { isOpen: boolean, onClose: () => void, onConfirm: (mode: 'Ebook' | 'Sách giấy') => void }) => {
+  const [selectedMode, setSelectedMode] = useState<'Ebook' | 'Sách giấy'>('Ebook');
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={onClose} className="absolute inset-0 bg-black/40 backdrop-blur-md" />
+          <motion.div initial={{ opacity: 0, scale: 0.95, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 10 }} className="glass-panel rounded-[2.5rem] w-full max-w-[440px] overflow-hidden relative z-10 p-8">
+            <div className="flex justify-between items-start mb-6">
+              <h3 className="text-xl font-bold text-gray-900">Thêm vào giỏ hàng</h3>
+              <button onClick={onClose} className="p-1 hover:bg-white/80 rounded-full transition-colors"><X size={20} className="text-gray-400" /></button>
+            </div>
+            <p className="text-gray-500 font-medium mb-10 text-lg">Chọn hình thức sách bạn muốn thêm vào giỏ!</p>
+            <div className="mb-12">
+              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">HÌNH THỨC</p>
+              <div className="grid grid-cols-2 gap-4">
+                <button onClick={() => setSelectedMode('Ebook')} className={`flex items-center justify-center space-x-3 py-4 rounded-[2rem] border transition-all font-bold text-base ${selectedMode === 'Ebook' ? 'border-[#1e3b2b] bg-[#1e3b2b]/5 text-[#1e3b2b] ring-1 ring-[#1e3b2b]' : 'border-white/60 bg-white/50 text-gray-400 hover:bg-white/80'}`}>
+                  <span>Ebook</span>
+                </button>
+                <button onClick={() => setSelectedMode('Sách giấy')} className={`flex items-center justify-center space-x-3 py-4 rounded-[2rem] border transition-all font-bold text-base ${selectedMode === 'Sách giấy' ? 'border-[#1e3b2b] bg-[#1e3b2b]/5 text-[#1e3b2b] ring-1 ring-[#1e3b2b]' : 'border-white/60 bg-white/50 text-gray-400 hover:bg-white/80'}`}>
+                  <span>Sách giấy</span>
+                </button>
+              </div>
+            </div>
+            <div className="flex gap-4">
+              <button onClick={onClose} className="flex-1 py-4 font-bold text-gray-400 hover:text-gray-900 transition-colors">Hủy</button>
+              <button onClick={() => onConfirm(selectedMode)} className="flex-1 py-4 bg-[#1e3b2b] text-white font-bold rounded-full shadow-md shadow-[#1e3b2b]/20 hover:shadow-lg hover:-translate-y-0.5 transition-all active:scale-95">Xác nhận</button>
+            </div>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
+  );
+};
+
+const BookDetailView = ({ onBack, bookId, onStartBorrow, borrowedInfo, onRenew, onRead, isLoggedIn, onRequireLogin, onAddToCart, cartBooks }: BookDetailViewProps) => {
   const [isLiked, setIsLiked] = useState(false);
   const [isBorrowModalOpen, setIsBorrowModalOpen] = useState(false);
   const [isRenewModalOpen, setIsRenewModalOpen] = useState(false);
+  const [isCartModalOpen, setIsCartModalOpen] = useState(false);
   const [reviewText, setReviewText] = useState('');
   const [localReviews, setLocalReviews] = useState([
     { name: 'Phạm Mai Phương', date: '2 ngày trước', content: 'Một cuốn sách thực sự thay đổi cuộc đời. Cách Pico Iyer mô tả sức mạnh của sự tĩnh lặng trong thế giới bận rộn của chúng ta vừa mang tính thơ mộng vừa thiết thực.', rating: 5 },
     { name: 'Lê Việt Anh', date: '1 tuần trước', content: 'Được viết rất hay và đầy sức gợi mở. Đây là một cuốn sách ngắn nhưng chứa đựng rất nhiều ý nghĩa.', rating: 5 }
   ]);
+
+  const [bookData, setBookData] = useState<Book | null>(null);
+
+  const handleAddToCartClick = () => {
+    if (!isLoggedIn) {
+      onRequireLogin?.();
+      return;
+    }
+    if (bookData?.bookType === 'EBOOK') {
+      onAddToCart?.(Number(bookId), 'Ebook');
+    } else if (bookData?.bookType === 'PHYSICAL_BOOK') {
+      onAddToCart?.(Number(bookId), 'Sách giấy');
+    } else {
+      setIsCartModalOpen(true);
+    }
+  };
+
+  useEffect(() => {
+    if (!borrowedInfo && bookId) {
+      bookApi.getBookById(Number(bookId)).then(res => {
+        if (res) setBookData(res);
+      }).catch(err => console.error('Failed to fetch book detail', err));
+    }
+  }, [bookId, borrowedInfo]);
 
   const handleReviewSubmit = () => {
     if (!reviewText.trim()) return;
@@ -95,15 +160,19 @@ const BookDetailView = ({ onBack, bookId, onStartBorrow, borrowedInfo, onRenew, 
     setReviewText('');
   };
 
-  const bookTitle = borrowedInfo?.title || "The Art of Stillness";
-  const bookAuthor = borrowedInfo?.author || "Pico Iyer";
-  const bookImage = borrowedInfo?.imageUrl || "https://picsum.photos/seed/stillness/800/1067";
-  const bookType = borrowedInfo?.type || "Online";
+  const bookTitle = borrowedInfo?.title || bookData?.title || "The Art of Stillness";
+  const bookAuthor = borrowedInfo?.author || bookData?.author || "Pico Iyer";
+  const bookImage = borrowedInfo?.imageUrl || bookData?.imageUrl || "https://picsum.photos/seed/stillness/800/1067";
+  const bookType = borrowedInfo?.type || (bookData?.bookType === 'EBOOK' ? 'Ebook' : bookData?.bookType === 'PHYSICAL_BOOK' ? 'Sách giấy' : 'Cả hai') || "Online";
   const expiryDate = borrowedInfo?.expiryDate || "27-5-2026";
   const renewCount = borrowedInfo?.renewCount || "0/2";
+  const likes = bookData?.likes || 0;
+  const copies = bookData?.quantity || 0;
 
   const handleRenewConfirm = () => {
-    if (onRenew && borrowedInfo) onRenew(borrowedInfo.id);
+    if (onRenew && borrowedInfo && borrowedInfo.recordId) {
+      onRenew(borrowedInfo.recordId);
+    }
     setIsRenewModalOpen(false);
   };
 
@@ -141,14 +210,14 @@ const BookDetailView = ({ onBack, bookId, onStartBorrow, borrowedInfo, onRenew, 
             <h1 className="text-6xl font-bold text-gray-900 mb-3 tracking-tight leading-[1.1]">{bookTitle}</h1>
             <p className="text-2xl font-bold text-gray-400 mb-10">{bookAuthor}</p>
             <div className="flex flex-wrap items-center justify-center lg:justify-start gap-8 text-sm font-bold">
-              <div className="flex items-center space-x-2"><Star size={18} className="fill-yellow-400 text-yellow-400" /><span>5.0</span><span className="text-gray-400">(342)</span></div>
-              <div className="flex items-center space-x-2 group cursor-pointer"><Heart size={18} className="text-red-500 fill-red-500" /><span className="text-gray-400">1.2k lượt thích</span></div>
-              <div className="flex items-center space-x-2"><Library size={18} className="text-gray-400" /><span className="text-gray-400">Còn 12 cuốn</span></div>
+              <div className="flex items-center space-x-2"><Star size={18} className="fill-yellow-400 text-yellow-400" /><span>{bookData?.avgRating || '5.0'}</span><span className="text-gray-400">(342)</span></div>
+              <div className="flex items-center space-x-2 group cursor-pointer"><Heart size={18} className="text-red-500 fill-red-500" /><span className="text-gray-400">{likes} lượt thích</span></div>
+              <div className="flex items-center space-x-2"><Library size={18} className="text-gray-400" /><span className="text-gray-400">Còn {copies} cuốn</span></div>
             </div>
           </div>
 
           <p className="text-gray-500 leading-relaxed text-lg mb-8 max-w-2xl mx-auto lg:mx-0">
-            A compelling and thoughtful exploration of finding peace in a fast-paced world. Pico Iyer investigates the lives of people who have made a life seeking stillness.
+            {bookData?.description || 'A compelling and thoughtful exploration of finding peace in a fast-paced world.'}
           </p>
 
           {borrowedInfo && (
@@ -164,11 +233,22 @@ const BookDetailView = ({ onBack, bookId, onStartBorrow, borrowedInfo, onRenew, 
           <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4">
             {borrowedInfo ? (
               <>
-                <button onClick={() => onRead && onRead(Number(bookId))} className="bg-[#1e3b2b] text-white px-14 py-4 rounded-full font-bold shadow-md shadow-[#1e3b2b]/20 hover:shadow-lg hover:-translate-y-0.5 transition-all active:scale-95">Đọc ngay</button>
+                {borrowedInfo.actions.includes('Đọc') && (
+                  <button onClick={() => onRead && onRead(Number(bookId))} className="bg-[#1e3b2b] text-white px-14 py-4 rounded-full font-bold shadow-md shadow-[#1e3b2b]/20 hover:shadow-lg hover:-translate-y-0.5 transition-all active:scale-95">Đọc ngay</button>
+                )}
                 <button onClick={() => setIsRenewModalOpen(true)} disabled={renewCount === '2/2'} className={`px-14 py-4 rounded-full font-bold border border-white/60 backdrop-blur-md transition-all active:scale-95 ${renewCount === '2/2' ? 'bg-white/30 text-gray-400' : 'bg-white/50 text-gray-900 hover:bg-white/80 hover:-translate-y-0.5'}`}>Gia hạn</button>
               </>
             ) : (
-              <button onClick={() => setIsBorrowModalOpen(true)} className="bg-[#1e3b2b] text-white px-14 py-4 rounded-full font-bold shadow-md shadow-[#1e3b2b]/20 hover:shadow-lg hover:-translate-y-0.5 transition-all active:scale-95">Mượn ngay</button>
+              <>
+                <button onClick={() => {
+                  if (isLoggedIn) {
+                    setIsBorrowModalOpen(true);
+                  } else {
+                    onRequireLogin?.();
+                  }
+                }} className="bg-[#1e3b2b] text-white px-14 py-4 rounded-full font-bold shadow-md shadow-[#1e3b2b]/20 hover:shadow-lg hover:-translate-y-0.5 transition-all active:scale-95">Mượn ngay</button>
+                <button onClick={handleAddToCartClick} className="px-14 py-4 rounded-full font-bold border border-[#1e3b2b]/40 bg-white/60 hover:bg-white/90 text-[#1e3b2b] shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all active:scale-95">Thêm vào giỏ</button>
+              </>
             )}
             <button onClick={() => setIsLiked(!isLiked)} className={`w-14 h-14 rounded-full border border-white/60 bg-white/50 hover:bg-white/80 backdrop-blur-md flex items-center justify-center hover:-translate-y-0.5 transition-all shadow-sm ${isLiked ? 'text-red-500' : 'text-[#1e3b2b]'}`}><Heart size={22} className={isLiked ? 'fill-red-500' : ''} /></button>
           </div>
@@ -198,6 +278,7 @@ const BookDetailView = ({ onBack, bookId, onStartBorrow, borrowedInfo, onRenew, 
       </section>
 
       <BorrowModal isOpen={isBorrowModalOpen} onClose={() => setIsBorrowModalOpen(false)} onConfirm={(mode) => { setIsBorrowModalOpen(false); onStartBorrow(mode); }} />
+      <AddToCartModal isOpen={isCartModalOpen} onClose={() => setIsCartModalOpen(false)} onConfirm={(mode) => { setIsCartModalOpen(false); onAddToCart?.(Number(bookId), mode); }} />
       <GenericConfirmModal isOpen={isRenewModalOpen} onClose={() => setIsRenewModalOpen(false)} onConfirm={handleRenewConfirm} message="Xác nhận gia hạn sách?" confirmText="Xác nhận" variant="primary" />
     </motion.div>
   );

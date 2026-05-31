@@ -148,10 +148,10 @@ export default function UserManagement() {
 
   const getAccountTypeStyle = (role: RoleName) => {
     switch (role) {
-      case RoleName.ADMIN:
-        return 'bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100';
-      case RoleName.LIBRARIAN:
-        return 'bg-blue-50 text-[#0056b3] border-blue-200 hover:bg-blue-100';
+      // case RoleName.ADMIN:
+      //   return 'bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100';
+      // case RoleName.LIBRARIAN:
+      //   return 'bg-blue-50 text-[#0056b3] border-blue-200 hover:bg-blue-100';
       case RoleName.GUEST:
         return 'bg-gray-50 text-gray-700 border-gray-200 hover:bg-gray-100';
       case RoleName.READER:
@@ -163,10 +163,10 @@ export default function UserManagement() {
 
   const getRoleChevronStyle = (role: RoleName) => {
     switch (role) {
-      case RoleName.ADMIN:
-        return 'text-purple-600';
-      case RoleName.LIBRARIAN:
-        return 'text-blue-600';
+      // case RoleName.ADMIN:
+      //   return 'text-purple-600';
+      // case RoleName.LIBRARIAN:
+      //   return 'text-blue-600';
       case RoleName.GUEST:
         return 'text-gray-500';
       case RoleName.READER:
@@ -178,10 +178,10 @@ export default function UserManagement() {
 
   const filteredUsers = users.filter(user => {
     const matchesFilter = filterType === 'Tất cả' || user.role === filterType;
-    const matchesSearch = user.fullName.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          user.userName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          user.id.toString().includes(searchQuery);
+    const matchesSearch = user.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.userName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.id.toString().includes(searchQuery);
     return matchesFilter && matchesSearch;
   });
 
@@ -219,7 +219,7 @@ export default function UserManagement() {
                   >
                     <option value="Tất cả">Lọc: Tất cả</option>
                     <option value={RoleName.READER}>Reader</option>
-                    <option value={RoleName.ADMIN}>Admin</option>
+                    {/* <option value={RoleName.ADMIN}>Admin</option> */}
                     <option value={RoleName.LIBRARIAN}>Librarian</option>
                     <option value={RoleName.GUEST}>Guest</option>
                   </select>
@@ -286,8 +286,8 @@ export default function UserManagement() {
                               className={`appearance-none outline-none cursor-pointer text-xs font-bold rounded-full px-3 py-1.5 pr-8 border transition-colors ${getAccountTypeStyle(user.role)}`}
                             >
                               <option value={RoleName.READER}>Reader</option>
-                              <option value={RoleName.ADMIN}>Admin</option>
-                              <option value={RoleName.LIBRARIAN}>Librarian</option>
+                              {/* <option value={RoleName.ADMIN}>Admin</option> */}
+                              {/* <option value={RoleName.LIBRARIAN}>Librarian</option> */}
                               <option value={RoleName.GUEST}>Guest</option>
                             </select>
                             <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2">
@@ -300,13 +300,12 @@ export default function UserManagement() {
                             <select
                               value={user.userStatus}
                               onChange={(e) => toggleStatus(user.id, e.target.value as UserStatus)}
-                              className={`appearance-none outline-none cursor-pointer text-xs font-bold rounded-full px-3 py-1.5 pr-8 border transition-colors ${
-                                user.userStatus === UserStatus.ACTIVE 
-                                  ? 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100' 
+                              className={`appearance-none outline-none cursor-pointer text-xs font-bold rounded-full px-3 py-1.5 pr-8 border transition-colors ${user.userStatus === UserStatus.ACTIVE
+                                  ? 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100'
                                   : user.userStatus === UserStatus.BANNED
-                                  ? 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100'
-                                  : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'
-                              }`}
+                                    ? 'bg-red-50 text-red-700 border-red-200 hover:bg-red-100'
+                                    : 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100'
+                                }`}
                             >
                               <option value={UserStatus.ACTIVE}>Active</option>
                               <option value={UserStatus.INACTIVE}>Inactive</option>
@@ -314,8 +313,8 @@ export default function UserManagement() {
                             </select>
                             <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2">
                               <ChevronDown size={14} className={
-                                user.userStatus === UserStatus.ACTIVE ? 'text-green-600' : 
-                                user.userStatus === UserStatus.BANNED ? 'text-red-600' : 'text-gray-500'
+                                user.userStatus === UserStatus.ACTIVE ? 'text-green-600' :
+                                  user.userStatus === UserStatus.BANNED ? 'text-red-600' : 'text-gray-500'
                               } />
                             </div>
                           </div>

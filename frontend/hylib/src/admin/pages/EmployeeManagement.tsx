@@ -6,6 +6,7 @@ import CreateUserModal from '../components/CreateUserModal';
 import ConfirmDeleteModal from '../components/ConfirmDeleteModal';
 import EditUserModal from '../components/EditUserModal';
 import { userApi } from '../../api/userApi';
+import { User, RoleName, UserStatus } from '../../types';
 import { Search, ChevronDown, Plus, Filter } from 'lucide-react';
 
 export default function EmployeeManagement() {
@@ -21,14 +22,39 @@ export default function EmployeeManagement() {
     setRefreshTrigger(prev => prev + 1);
   };
 
-  const handleAddUser = async (data: any) => {
-    await userApi.createUser(data);
-    handleRefresh();
+  const handleAddUser = async (data: any, password?: string) => {
+    try {
+      await userApi.createUser({
+        userName: data.userName,
+        fullName: data.fullName,
+        email: data.email,
+        phoneNum: data.phoneNum,
+        avatarUrl: data.avatarUrl || '',
+        role: data.role || RoleName.LIBRARIAN,
+        userStatus: data.userStatus || UserStatus.ACTIVE,
+        password: password || 'password123'
+      });
+      handleRefresh();
+    } catch (error) {
+      console.error('Failed to create employee', error);
+      alert('Không thể tạo nhân viên. Tên đăng nhập hoặc email có thể đã tồn tại!');
+    }
   };
 
   const handleUpdateRole = async (user: any) => {
-    await userApi.updateUser(user.id, user);
-    handleRefresh();
+    try {
+      await userApi.updateUser(user.id, {
+        fullName: user.fullName,
+        email: user.email,
+        phoneNum: user.phoneNum,
+        avatarUrl: user.avatarUrl,
+        role: user.role,
+        userStatus: user.userStatus
+      });
+      handleRefresh();
+    } catch (error) {
+      console.error('Failed to update employee', error);
+    }
   };
 
   const handleDeleteUser = async () => {
@@ -74,8 +100,9 @@ export default function EmployeeManagement() {
                     className="appearance-none bg-white border border-gray-200 rounded-full pl-10 pr-8 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all shadow-sm focus:outline-none focus:border-[#0066cc] cursor-pointer"
                   >
                     <option value="Tất cả">Lọc: Trạng thái</option>
-                    <option value="ĐANG MỞ">ĐANG MỞ</option>
-                    <option value="ĐÃ KHÓA">ĐÃ KHÓA</option>
+                    <option value={UserStatus.ACTIVE}>Active</option>
+                    <option value={UserStatus.INACTIVE}>Inactive</option>
+                    <option value={UserStatus.BANNED}>Banned</option>
                   </select>
                   <Filter size={16} className="absolute left-3.5 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none" />
                   <ChevronDown size={14} className="absolute right-3.5 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none" />
@@ -89,9 +116,8 @@ export default function EmployeeManagement() {
                     className="appearance-none bg-white border border-gray-200 rounded-full pl-10 pr-8 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-all shadow-sm focus:outline-none focus:border-[#0066cc] cursor-pointer"
                   >
                     <option value="Tất cả">Lọc: Quyền hạn</option>
-                    <option value="THỦ THƯ">THỦ THƯ</option>
-                    <option value="KỸ THUẬT">KỸ THUẬT</option>
-                    <option value="QTV">QTV</option>
+                    <option value={RoleName.ADMIN}>Admin</option>
+                    <option value={RoleName.LIBRARIAN}>Librarian</option>
                   </select>
                   <Filter size={16} className="absolute left-3.5 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none" />
                   <ChevronDown size={14} className="absolute right-3.5 top-1/2 transform -translate-y-1/2 text-gray-500 pointer-events-none" />

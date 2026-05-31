@@ -13,6 +13,13 @@ export const bookApi = {
   },
 
   /**
+   * Fetch a single book by ID
+   */
+  getBookById: (id: number) => {
+    return axiosClient.get(`/books/${id}`);
+  },
+
+  /**
    * Add a new book
    */
   createBook: (data: Omit<Book, 'id'>) => {
